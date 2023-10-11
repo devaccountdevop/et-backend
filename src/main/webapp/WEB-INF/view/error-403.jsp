@@ -1,0 +1,1 @@
+Custom permission denied page. inside view folder. Change it.

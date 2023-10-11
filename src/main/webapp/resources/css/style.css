@@ -1,0 +1,139 @@
+@charset "utf-8";
+/* CSS Document */
+/*
+font-family: 'Roboto', sans-serif;
+font-family: 'Open Sans', sans-serif;
+*/
+
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i,800,800i|Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i');
+
+
+html, body {
+  height: 100%;
+}
+h1,h2,h3,h4{font-family:'Roboto', sans-serif;}
+
+/*----- Common Css -----*/
+.margT0 {margin-top:0;}
+.margB0 {margin-bottom:0;}
+.margLR0 {margin-left:0px; margin-right:0;}
+.margT10 {margin-top:10px;}
+.margT20 {margin-top:20px;}
+.margT90 {margin-top:90px;}
+.margB10 {margin-bottom:10px;}
+.margB20 {margin-bottom:20px;}
+.margTB10 {margin-top:10px; margin-bottom:10px;}
+.margLR5 {margin-left:5px; margin-right:5px;}
+.margL10 {margin-left:10px;}
+.margR10 {margin-right:10px;}
+.margLR10 {margin-left:10px; margin-right:10px;}
+
+
+.paddAll0 {padding:0;}
+.paddLR0 {padding-left:0; padding-right:0;}
+.paddT0 {padding-top:0;}
+.paddB0 {padding-bottom:0;}
+.paddL0 {padding-left:0;}
+.paddR0 {padding-right:0;}
+.paddT10 {padding-top:10px;}
+.paddB10 {padding-bottom:10px;}
+.paddTB0 {padding-top:0px; padding-bottom:0px;}
+.paddTB10 {padding-top:10px; padding-bottom:10px;}
+
+/*----- Header Css -----*/
+.logo {
+    display: block;
+    margin-bottom: 20px;
+}
+.logo img {
+    width: 210px;
+    padding-bottom: 20px;
+    display: block;
+    margin-bottom: 10px;
+	margin-left: 10px;
+	margin-top: 30px;
+}
+.logo hr {
+    border-top: 1px solid #404040;
+}
+
+.bgClient {height:100%; min-height:97vh; width:100%; color:#fff; background-color:#333; background-image:url(../images/clientnavigation-bg.jpg); background-size:cover; background-position:center; background-repeat:no-repeat;}
+
+.bgInternal {height:100%; min-height:100vh; width:100%; color:#fff; background-color:#333; background-image:url(../images/internalnavigation.jpg); background-size:cover; background-position:center; background-repeat:no-repeat;}
+
+.logoIcon {max-width:90px; width:60px; margin-top:1em; margin-bottom:1em;}
+.tagIcon {max-width:300px; width:390px; margin-top:0em; margin-bottom:1em;}
+.sideBar h1 {font-family:'Roboto', sans-serif; font-size:30px; text-transform:uppercase; font-weight:400; margin-bottom:0.5em;}
+.logoTxt {max-width:300px; width:240px; margin-bottom:2em;}
+.flex-container {display:-webkit-flex; display:-ms-flexbox; display:flex;}
+
+.sideBar p {font-family:'Open Sans', sans-serif; font-weight:300; font-size:14px; line-height:1.5rem;}
+.sideBar p strong {font-weight:bold;}
+.ssLogo {/*position:absolute; bottom:45px;*/ margin-top:2rem;}
+
+aside {padding:3rem 2rem;}
+main {padding:3rem 4rem;}
+.logNameIn, .dateTime {font-family:'Roboto', sans-serif; font-weight:300; font-size:14px;}
+article h1 {font-family:'Roboto', sans-serif; font-weight:500; font-size:21px; color:#a49fa0; margin-left:4.3em; margin-bottom:1em;}
+
+.iconDiv {max-width:95px; width:65px; height:65px; margin-right:2em;}
+/*.topMarg {margin-top:7em;}
+*/
+article {margin-top:2rem; margin-bottom:4rem;}
+
+.links-list {max-width:100%;}
+.links-list-items {display:flex; padding:0; flex-flow:row wrap; justify-content:space-between; align-items:center;}
+.links-list-items h2.link-title {font-family:'Roboto', sans-serif; font-weight:300; font-size:24px; color:#404040; text-transform:uppercase; margin-right:auto; margin-bottom:0;}
+
+.links-list-items a.dc-success {max-width:190px; width:190px; height:30px; padding:0; background:#c4d945; color:#fff; border-color:transparent; border-radius:0; text-transform:uppercase; font-family:'Roboto', sans-serif; font-weight:500; font-size:16px; line-height:1.8;}
+
+.links-list-items a.dc-success:hover {background:#404040;}
+
+.dc-icons hr {margin-left:6em; border-top: 1px solid #404040}
+
+/*----- Footer Css -----*/
+footer nav {background:#404040; font-family:'Open Sans', sans-serif; font-weight:400; font-style:normal; font-size:12px; color:#fff; justify-content:center!important;}
+footer nav a {color:#fff; display:contents;}
+footer nav a:hover{color:#adcc00;}
+
+/*----- Media Queries -----*/
+@media screen and (max-width:767.98px) {
+    .bgHome {height:100%; padding:10vh 0;}
+    .pdetails {max-width:100%;}
+    aside, main {padding:3rem 1rem;}
+    .dc-icons hr {margin-left:0;}
+    .dateTime {float:left;}
+}
+
+/**** by pooja ****/
+
+
+.page-wrap {
+  min-height: 100%;
+  /* equal to footer height */
+  margin-bottom: -34px; 
+}
+.page-wrap:after {
+  content: "";
+  display: block;
+}
+/*
+.site-footer, .page-wrap:after {
+  height: 34px; 
+}*/
+.site-footer {
+  background: #404040;
+	margin-left: -15px;
+margin-right: -15px;
+}
+
+.footer-pos {
+    font-family:'Open Sans', sans-serif; font-weight:400; font-style:normal; font-size:12px; color:#fff;
+    margin: 0;
+ padding: 10px 0px 9px 0;
+    text-align: center;
+	background-color: #404040;
+}
+.footer-pos a {
+color: #ffffff;
+}
