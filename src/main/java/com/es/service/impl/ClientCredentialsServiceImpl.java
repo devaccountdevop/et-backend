@@ -49,6 +49,12 @@ public class ClientCredentialsServiceImpl implements ClientCredentialsService{
 		
 		return clientCredentialsRepository.findByUserId(userId);
 	}
+
+	@Override
+	public ClientCredentials updateClientCredentialsByUserId(ClientCredentials clientCredentials) {
+		
+		return clientCredentialsRepository.save(clientCredentials);
+	}
 	
 
 	

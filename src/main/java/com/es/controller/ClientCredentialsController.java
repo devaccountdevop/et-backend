@@ -7,9 +7,11 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -100,6 +102,62 @@ public class ClientCredentialsController {
 	   		 response.setMessage(ExceptionEnum.INVALID_AUTH_USER.getMessage());
 	   		 return response;
 	   	 }
+		
+	}
+	
+	
+
+	@PutMapping("/updateclient/{Id}")
+	public ClientCredentialsResponse updateClientCredentialsById(@PathVariable String Id, HttpServletRequest request, Model model) {
+		
+		ClientCredentialsResponse response = new ClientCredentialsResponse();
+		String userId = request.getParameter("userId");
+	    String userName = request.getParameter("userName");
+	    String token = request.getParameter("token"); 
+	    String clientName = request.getParameter("clientName"); 
+	    
+	    ClientCredentials clientCred = new ClientCredentials();
+	    clientCred =  clientCredentialsService.getClientCredentials(Integer.parseInt(Id));
+	    if(clientCred.getId() != 0) {
+	    	clientCred.setId(Integer.parseInt(Id));
+	    	clientCred.setClientName(clientName);
+	    	clientCred.setJiraUserName(userName);
+	    	clientCred.setToken(token);
+	    	clientCred.setUserId(Integer.parseInt(userId));
+	    	clientCredentialsService.saveClientCredentials(clientCred);
+	    	response.setData(clientCred);
+	   	    response.setCode(SuccessEnum.SUCCESS_TYPE.getCode());
+	   	    response.setMessage(SuccessEnum.SUCCESS_TYPE.getMessage());
+	   	 return response;
+	    }else {
+	   		 
+	   		 response.setCode(ExceptionEnum.INVALID_AUTH_USER.getErrorCode());
+	   		 response.setMessage(ExceptionEnum.INVALID_AUTH_USER.getMessage());
+	   		 return response;
+	   	 }
+		
+	}
+	
+	@DeleteMapping("/deleteclient/{Id}")
+	public ClientCredentialsResponse deleteClientCredential(@PathVariable String Id) {
+		
+		ClientCredentialsResponse response = new ClientCredentialsResponse();
+		ClientCredentials deleteCredentials = new ClientCredentials();
+		deleteCredentials  = clientCredentialsService.getClientCredentials(Integer.parseInt(Id));
+		if(deleteCredentials.getId() !=0) {
+			clientCredentialsService.deleteClientCredentials(deleteCredentials.getId());
+			response.setCode(200);
+			response.setMessage("Credentials has been deleted ");
+			response.setData(deleteCredentials);
+			return response;
+		}else {
+			
+			response.setCode(404);
+			response.setMessage("Credentials not found ");
+			response.setError(true);
+			return response;
+			
+		}
 		
 	}
 	

@@ -14,8 +14,9 @@ public interface ClientCredentialsService {
 	ClientCredentials saveClientCredentials(ClientCredentials clientCredentials);
 	ClientCredentials updateClientCredentials(ClientCredentials clientCredentials);
 	//ClientCredentials getClientCredentialsByUserId(int id);
-	void deleteClientCredentials(int id);
+	void deleteClientCredentials(int userId);
 	List<ClientCredentials> getUsersByUserId(int userId);
+	public ClientCredentials updateClientCredentialsByUserId(ClientCredentials clientCredentials);
 	
 	
 //	ClientCredentials getUserById(int id);
