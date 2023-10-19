@@ -107,19 +107,20 @@ public class ClientCredentialsController {
 	
 	
 
-	@PutMapping("/updateclient/{Id}")
-	public ClientCredentialsResponse updateClientCredentialsById(@PathVariable String Id, HttpServletRequest request, Model model) {
+	@PutMapping("/updateclient")
+	public ClientCredentialsResponse updateClientCredentialsById( HttpServletRequest request, Model model) {
 		
 		ClientCredentialsResponse response = new ClientCredentialsResponse();
+		String id = request.getParameter("id");
 		String userId = request.getParameter("userId");
 	    String userName = request.getParameter("userName");
 	    String token = request.getParameter("token"); 
 	    String clientName = request.getParameter("clientName"); 
 	    
 	    ClientCredentials clientCred = new ClientCredentials();
-	    clientCred =  clientCredentialsService.getClientCredentials(Integer.parseInt(Id));
+	    clientCred =  clientCredentialsService.getClientCredentials(Integer.parseInt(id));
 	    if(clientCred.getId() != 0) {
-	    	clientCred.setId(Integer.parseInt(Id));
+	    	clientCred.setId(Integer.parseInt(id));
 	    	clientCred.setClientName(clientName);
 	    	clientCred.setJiraUserName(userName);
 	    	clientCred.setToken(token);
