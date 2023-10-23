@@ -2,6 +2,7 @@ package com.es.service;
 
 import com.es.dto.EmployeeMasterDto;
 import com.es.dto.ProjectInfoDto;
+import com.es.dto.SprintInfoDto;
 import com.es.entity.EstimationMaster;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -83,21 +84,37 @@ public class JIRARestService {
 	    return projectInfoList;
 	}
 	
- 	
-// 	public String getAllProjectsInJSON(){
-//		RestTemplate restTemplate = new RestTemplate();
-//		HttpHeaders headers = new HttpHeaders();
-//		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-//		headers.setBasicAuth(jira_username, jira_token);
-//		HttpEntity<String> entity = new HttpEntity<>(headers);
-//		ResponseEntity<String> response = restTemplate.exchange(jira_base_url + jira_get_project, HttpMethod.GET, entity, String.class);
-//		//Gson gson = new Gson();
-//		//String abc = gson.toJson(str); //your list of Master_City
-//		//System.out.println("abc::: " + abc);
-//		return response.getBody();
-//	}
+	public List<SprintInfoDto> getAllSprintsByProjectId(int projectId) {
+	    RestTemplate restTemplate = new RestTemplate();
+	    
+	    HttpHeaders headers = new HttpHeaders();
+	    headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+	    headers.setBasicAuth(jira_username, jira_token);
+	    HttpEntity<String> entity = new HttpEntity<>(headers);
 
+	   String jiraSprintEndpoint = jira_base_url + jira_get_project + projectId + "/sprint";
 
+	    ResponseEntity<String> responseEntity = restTemplate.exchange(jiraSprintEndpoint, HttpMethod.GET, entity, String.class);
+	    String jsonResponse = responseEntity.getBody();
+	    JsonParser jsonParser = new JsonParser();
+	    JsonObject jsonObject = jsonParser.parse(jsonResponse).getAsJsonObject();
+
+	    JsonArray values = jsonObject.getAsJsonArray("values");
+
+	    List<SprintInfoDto> sprintInfoList = new ArrayList<>();
+
+	    for (int i = 0; i < values.size(); i++) {
+	        JsonObject sprintObject = values.get(i).getAsJsonObject();
+	        int sprintId = sprintObject.get("id").getAsInt();
+	        String sprintName = sprintObject.get("name").getAsString();
+
+	        SprintInfoDto sprintInfo = new SprintInfoDto(sprintId, sprintName);
+	        sprintInfoList.add(sprintInfo);
+	    }
+
+	    return sprintInfoList;
+	}
+		
 
 	
 }
