@@ -3,6 +3,8 @@ package com.es.service;
 import com.es.dto.EmployeeMasterDto;
 import com.es.dto.ProjectInfoDto;
 import com.es.dto.SprintInfoDto;
+import com.es.dto.TaskInfoDto;
+import com.es.entity.ClientCredentials;
 import com.es.entity.EstimationMaster;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -24,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 
 
+
 @Service
 public class JIRARestService {
 
@@ -40,49 +43,51 @@ public class JIRARestService {
 	private String jira_get_project;
 
 
-	public List<ProjectInfoDto> getAllProjects() {
-	    RestTemplate restTemplate = new RestTemplate();
+	@Autowired
+	ClientCredentialsService clientCredentialsService;
+	
+	public List<ProjectInfoDto> getAllProjects(int clientId) {
+		
+		ClientCredentials clientCredentials = new ClientCredentials();
+		clientCredentials = clientCredentialsService.getClientCredentials(clientId);
+		
+		if(clientCredentials != null) {
+			
+			 	RestTemplate restTemplate = new RestTemplate();
+			    HttpHeaders headers = new HttpHeaders();
+			    headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+			    headers.setBasicAuth(clientCredentials.getJiraUserName(), clientCredentials.getToken());
+			    HttpEntity<String> entity = new HttpEntity<>(headers);
 
- 
+			    ResponseEntity<String> responseEntity = restTemplate.exchange(jira_base_url + jira_get_project, HttpMethod.GET, entity, String.class);
+			    String jsonResponse = responseEntity.getBody();
+			    JsonParser jsonParser = new JsonParser();
+			    JsonObject jsonObject = jsonParser.parse(jsonResponse).getAsJsonObject();
 
-	    HttpHeaders headers = new HttpHeaders();
-	    headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-	    headers.setBasicAuth(jira_username, jira_token);
-	    HttpEntity<String> entity = new HttpEntity<>(headers);
+			    JsonArray values = jsonObject.getAsJsonArray("values");
 
- 
+			    List<ProjectInfoDto> projectInfoList = new ArrayList<>();
 
-	    ResponseEntity<String> responseEntity = restTemplate.exchange(jira_base_url + jira_get_project, HttpMethod.GET, entity, String.class);
-	    String jsonResponse = responseEntity.getBody();
-	    JsonParser jsonParser = new JsonParser();
-	    JsonObject jsonObject = jsonParser.parse(jsonResponse).getAsJsonObject();
+			    for (int i = 0; i < values.size(); i++) {
+			        JsonObject projectObject = values.get(i).getAsJsonObject();
+			        int projectId = projectObject.get("id").getAsInt();
+			        JsonObject location = projectObject.getAsJsonObject("location");
+			        String projectName = location.get("projectName").getAsString();
 
- 
-
-	    JsonArray values = jsonObject.getAsJsonArray("values");
-
- 
-
-	    List<ProjectInfoDto> projectInfoList = new ArrayList<>();
-
- 
-
-	    for (int i = 0; i < values.size(); i++) {
-	        JsonObject projectObject = values.get(i).getAsJsonObject();
-	        int projectId = projectObject.get("id").getAsInt();
-	        JsonObject location = projectObject.getAsJsonObject("location");
-	        String projectName = location.get("projectName").getAsString();
-
- 
-
-	        ProjectInfoDto projectInfo = new ProjectInfoDto(projectId, projectName);
-	        projectInfoList.add(projectInfo);
-	    }
-
- 
-
-	    return projectInfoList;
-	}
+			        ProjectInfoDto projectInfo = new ProjectInfoDto(projectId, projectName);
+			        projectInfoList.add(projectInfo);
+			        
+			    }
+			        
+			        return projectInfoList;
+		
+		}
+		else {
+			
+			return null;
+			
+		}
+}
 	
 	public List<SprintInfoDto> getAllSprintsByProjectId(int projectId) {
 	    RestTemplate restTemplate = new RestTemplate();
@@ -114,7 +119,8 @@ public class JIRARestService {
 
 	    return sprintInfoList;
 	}
-		
+	
+	
 
 	
 }
