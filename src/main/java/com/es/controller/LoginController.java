@@ -34,32 +34,36 @@ public class LoginController {
     }
     
     @PostMapping("")
-	public LoginResponse userLogin(HttpServletRequest request, Model model) {
-	    LoginResponse response = new LoginResponse();
+    public LoginResponse userLogin(HttpServletRequest request, Model model) {
+        LoginResponse response = new LoginResponse();
 
-	    // Retrieve form data using HttpServletRequest
-	   // String Id = request.getParameter("Id"); // Assuming "Id" is the name attribute of the input field for Id in your form
-	    String email = request.getParameter("email"); // Assuming "email" is the name attribute of the email input field in your form
-	    String password = request.getParameter("password"); // Assuming "password" is the name attribute of the password input field in your form
+        // Retrieve form data using HttpServletRequest
+        String email = request.getParameter("email"); // Assuming "email" is the name attribute of the email input field in your form
+        String password = request.getParameter("password"); // Assuming "password" is the name attribute of the password input field in your form
 
-	    Signup signup = new Signup();
-	    signup.setUserName(email);
-	    signup.setPassword(password);
+        Signup signup = new Signup();
+        signup.setUserName(email);
+        signup.setPassword(password);
 
-	    Signup loginDetails = signupService.getUserByUserName(email);
+        Signup loginDetails = signupService.getUserByUserName(email);
 
-	    if (signup.getUserName().equals(loginDetails.getUserName()) && signup.getPassword().equals(loginDetails.getPassword())) {
-	        response.setCode(SuccessEnum.SUCCESS_LOGIN.getCode());
-	        response.setMessage(SuccessEnum.SUCCESS_LOGIN.getMessage());
-	        response.setData(loginDetails);
-	        return response;
-	    } else {
-	        response.setCode(ExceptionEnum.INVALID_USER.getErrorCode());
-	        response.setMessage(ExceptionEnum.INVALID_USER.getMessage());
-	        response.setError(true);
-	        return response;
-	    }
-	}
+        if (loginDetails != null) {
+            if (signup.getUserName().equals(loginDetails.getUserName()) && signup.getPassword().equals(loginDetails.getPassword())) {
+                response.setCode(SuccessEnum.SUCCESS_LOGIN.getCode());
+                response.setMessage(SuccessEnum.SUCCESS_LOGIN.getMessage());
+                response.setData(loginDetails);
+            } else {
+                response.setCode(ExceptionEnum.INVALID_USER.getErrorCode());
+                response.setMessage(ExceptionEnum.INVALID_USER.getMessage());
+                response.setError(true);
+            }
+        } else {
+            response.setCode(ExceptionEnum.INVALID_USER.getErrorCode());
+            response.setMessage(ExceptionEnum.INVALID_USER.getMessage());
+            response.setError(true);
+        }
 
+        return response;
+    }
 
 }
