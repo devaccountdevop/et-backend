@@ -137,41 +137,17 @@ public class JIRARestService {
 		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 		headers.setBasicAuth(jira_username, jira_token);
 		HttpEntity<String> entity = new HttpEntity<>(headers);
-		// String jiraTasksEndpoint = jira_base_url + jira_get_project + "/sprint/" +
-		// SprintId + "/issue" ;
+
 		String jiraTasksEndpoint = jira_base_url + jira_get_project + "/4" + "/sprint/" + SprintId + "/issue";
 
 		ResponseEntity<String> responseEntity = restTemplate.exchange(jiraTasksEndpoint, HttpMethod.GET, entity,
 				String.class);
-		// HttpHeaders headers = new HttpHeaders();
-		// headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-		// headers.setBasicAuth(jira_username, jira_token);
-		// HttpEntity<String> entity = new HttpEntity<String>(headers);
+
 		String str = restTemplate.exchange(jiraTasksEndpoint, HttpMethod.GET, entity, String.class).getBody();
 		Gson gson = new Gson();
-		String abc = gson.toJson(str); // your list of Master_City
-		// System.out.println("abc::: " + abc);
+		String abc = gson.toJson(str);
 		return abc;
-//	    String jsonResponse = responseEntity.getBody();
-//	    JsonParser jsonParser = new JsonParser();
-//	    JsonObject jsonObject = jsonParser.parse(jsonResponse).getAsJsonObject();
-// 
-//	    JsonArray issues = jsonObject.getAsJsonArray("issues");
-// 
-//	    List<SprintListPageDto> taskInfoList = new ArrayList<>();
-// 
-//	    for (int i = 0; i < issues.size(); i++) {
-//	        JsonObject issueObject = issues.get(i).getAsJsonObject();
-//	        int issueId = issueObject.get("id").getAsInt();
-//	       JsonObject fields = issueObject.getAsJsonObject("fields");
-//	        String issueName = fields.get("title").getAsString();
-// 
-//	        SprintListPageDto taskInfo = new SprintListPageDto(issueId, "parveen");
-//	        taskInfoList.add(taskInfo);
-//	    }
-// 
-// 
-//		return taskInfoList;
+//	    
 	}
 
 	public List<SprintListPageDto> getAllTasksBySprintId1(int SprintId) {
@@ -180,8 +156,7 @@ public class JIRARestService {
 		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 		headers.setBasicAuth(jira_username, jira_token);
 		HttpEntity<String> entity = new HttpEntity<>(headers);
-		// String jiraTasksEndpoint = jira_base_url + jira_get_project + "/sprint/" +
-		// SprintId + "/issue" ;
+
 		String jiraTasksEndpoint = jira_base_url + jira_get_project + "/4" + "/sprint/" + SprintId + "/issue";
 
 		ResponseEntity<String> responseEntity = restTemplate.exchange(jiraTasksEndpoint, HttpMethod.GET, entity,
@@ -229,7 +204,6 @@ public class JIRARestService {
 	public AiEstimateDto getAiEstimates(String taskId) {
 		RestTemplate restTemplate = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
-		// Set your headers if needed, for example, basic authentication.
 
 		HttpEntity<String> entity = new HttpEntity<String>(headers);
 
