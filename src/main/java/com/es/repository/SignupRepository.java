@@ -7,11 +7,11 @@ import com.es.entity.Signup;
 
 @Repository
 public interface SignupRepository extends JpaRepository<Signup, Integer> {
-	
+
 	Signup findByEmail(String email);
+
 	Signup findByUserName(String userName);
-	
-	
-	
+
+	Signup findUserByEmailOrUserName(String email, String userName);
 
 }

@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.es.dto.EmployeeMasterDto;
 
- 
 @Service
 public class EstimationMasterServiceImpl implements EstimationMasterService {
 
@@ -25,7 +24,7 @@ public class EstimationMasterServiceImpl implements EstimationMasterService {
 	@Override
 	public EstimationMaster getEmployee(int id) {
 		Optional<EstimationMaster> EmployeeList = this.eRepo.findById(id);
-		return ! EmployeeList.isPresent() ? null : EmployeeList.get();
+		return !EmployeeList.isPresent() ? null : EmployeeList.get();
 	}
 
 	@Override
@@ -52,6 +51,5 @@ public class EstimationMasterServiceImpl implements EstimationMasterService {
 	public void updateEmployeeMaster(EstimationMaster employeeMaster) {
 
 	}
-
 
 }

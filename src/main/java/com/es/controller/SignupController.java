@@ -16,48 +16,47 @@ import com.es.response.SuccessEnum;
 import com.es.service.SignupService;
 
 @RestController
-@RequestMapping("/signup")
+@RequestMapping("/estimation-tool")
 public class SignupController {
-	
-	
+
 	@Autowired
 	SignupService signupService;
-	
- @PostMapping("")
- 	public SignupResponse saveUser(HttpServletRequest request, Model model) {
-	    SignupResponse response = new SignupResponse();
 
-	    
-	    String email = request.getParameter("email"); 
-	    String userName = request.getParameter("userName");
-	    String password = request.getParameter("password"); 
+	@PostMapping("/signup")
+	public SignupResponse saveUser(HttpServletRequest request, Model model) {
+		SignupResponse response = new SignupResponse();
 
-//	    SignupDto signupDto = new SignupDto();
-//	    signupDto.setEmailId(email);
-//	    signupDto.setPassword(password);
-//	    signupDto.setUserName(userName);
- if(!email.isEmpty()&& !userName.isEmpty()&&!password.isEmpty()) {
-	 
-	 Signup saveUser = new Signup();
-	 
-	 saveUser.setEmail(email);
-	 saveUser.setUserName(userName);
-	 saveUser.setPassword(password);
-	 this.signupService.saveUser(saveUser);
-	 SignupDto userDto = new SignupDto();
-	 userDto.setEmailId(email);
-	 userDto.setPassword(password);
-	 userDto.setUserName(userName);
-	 response.setData(userDto);
-	 response.setCode(SuccessEnum.SUCCESS_REGISTER.getCode());
-	 response.setMessage(SuccessEnum.SUCCESS_REGISTER.getMessage());
-	 return response;
-	 }else {
-		 
-		 response.setCode(ExceptionEnum.INVALID_USER.getErrorCode());
-		 response.setMessage(ExceptionEnum.INVALID_USER.getMessage());
-		 return response;
-	 }
- }
-	  
+		String email = request.getParameter("email");
+		String userName = request.getParameter("userName");
+		String password = request.getParameter("password");
+
+		if (!email.isEmpty() && !userName.isEmpty() && !password.isEmpty()) {
+			Signup existingUser = signupService.findUserByEmailOrUsername(email, userName);
+
+			if (existingUser == null) {
+				Signup saveUser = new Signup();
+				saveUser.setEmail(email);
+				saveUser.setUserName(userName);
+				saveUser.setPassword(password);
+				this.signupService.saveUser(saveUser);
+				SignupDto userDto = new SignupDto();
+				userDto.setEmailId(email);
+				userDto.setPassword(password);
+				userDto.setUserName(userName);
+				response.setData(userDto);
+				response.setCode(SuccessEnum.SUCCESS_REGISTER.getCode());
+				response.setMessage(SuccessEnum.SUCCESS_REGISTER.getMessage());
+				return response;
+			} else {
+				response.setCode(ExceptionEnum.INVALID_USER.getErrorCode()); // Set 404 status code
+				response.setMessage(ExceptionEnum.INVALID_USER.getMessage());
+				return response;
+			}
+		} else {
+			response.setCode(ExceptionEnum.INVALID_USER.getErrorCode());
+			response.setMessage(ExceptionEnum.INVALID_USER.getMessage());
+			return response;
+		}
+	}
+
 }

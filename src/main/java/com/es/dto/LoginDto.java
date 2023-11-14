@@ -1,9 +1,10 @@
 package com.es.dto;
 
 public class LoginDto {
-	
+
 	private String id;
 	private String emaiId;
+
 	public String getEmaiId() {
 		return emaiId;
 	}
@@ -13,7 +14,7 @@ public class LoginDto {
 	}
 
 	private String password;
-	
+
 	public LoginDto() {
 	}
 
@@ -38,8 +39,5 @@ public class LoginDto {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	
-	
-	
 
 }
