@@ -30,9 +30,10 @@ public class SignupServiceImpl implements SignupService{
 
 	@Override
 	public Signup getUserByUserName(String userName) {
-		Optional<Signup> list = Optional.of(signupRepository.findByUserName(userName));
-		return ! list.isPresent() ? null: list.get();
+	    Optional<Signup> optionalUser = Optional.ofNullable(signupRepository.findByUserName(userName));
+	    return optionalUser.orElse(null);
 	}
+
 
 	@Override
 	public Signup saveUser(Signup signup) {
