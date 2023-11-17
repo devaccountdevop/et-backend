@@ -15,7 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.es.dto.AiEstimateDto;
+import com.es.dto.AiEstimatesDto;
 import com.es.dto.ProjectInfoDto;
 import com.es.dto.SprintInfoDto;
 import com.es.dto.SprintListPageDto;
@@ -146,18 +146,19 @@ public class JIRARestService {
 		String str = restTemplate.exchange(jiraTasksEndpoint, HttpMethod.GET, entity, String.class).getBody();
 		Gson gson = new Gson();
 		String abc = gson.toJson(str);
+
 		return abc;
-//	    
+
 	}
 
-	public List<SprintListPageDto> getAllTasksBySprintId1(int SprintId) {
+	public List<SprintListPageDto> getAllTasksBySprintId1(int SprintId, int projectId) {
 		RestTemplate restTemplate = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 		headers.setBasicAuth(jira_username, jira_token);
 		HttpEntity<String> entity = new HttpEntity<>(headers);
-
-		String jiraTasksEndpoint = jira_base_url + jira_get_project + "/4" + "/sprint/" + SprintId + "/issue";
+		String jiraTasksEndpoint = jira_base_url + jira_get_project + "/" + projectId + "/sprint/" + SprintId
+				+ "/issue";
 
 		ResponseEntity<String> responseEntity = restTemplate.exchange(jiraTasksEndpoint, HttpMethod.GET, entity,
 				String.class);
@@ -190,9 +191,9 @@ public class JIRARestService {
 			List<Estimates> labels1 = new ArrayList<>();
 			estimates = estimatesService.getEstimatesByTaskId(issueId);
 			labels1.add(estimates);
-			AiEstimateDto aiEstimatesDto = new AiEstimateDto();
+			AiEstimatesDto aiEstimatesDto = new AiEstimatesDto();
 			// aiEstimatesDto = this.getAiEstimates(issueId);
-			aiEstimatesDto.setAiestimates("updatebycode");
+			aiEstimatesDto.setAiestimates("3d");
 			SprintListPageDto taskInfo = new SprintListPageDto(issueId, issueName, issueDescription, labels1, labels,
 					aiEstimatesDto.getAiestimates());
 			taskInfoList.add(taskInfo);
@@ -201,7 +202,7 @@ public class JIRARestService {
 		return taskInfoList;
 	}
 
-	public AiEstimateDto getAiEstimates(String taskId) {
+	public AiEstimatesDto getAiEstimates(String taskId) {
 		RestTemplate restTemplate = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
 
@@ -213,7 +214,7 @@ public class JIRARestService {
 		JsonParser jsonParser = new JsonParser();
 		JsonArray jsonArray = jsonParser.parse(jsonResponse).getAsJsonArray();
 
-		AiEstimateDto aiEstimatesDto = new AiEstimateDto();
+		AiEstimatesDto aiEstimatesDto = new AiEstimatesDto();
 
 		for (JsonElement element : jsonArray) {
 			JsonObject issueObject = element.getAsJsonObject();

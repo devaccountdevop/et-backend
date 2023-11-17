@@ -15,6 +15,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
@@ -23,34 +24,31 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 @RestController
+@RequestMapping("/estimation-tool/")
 public class SprintController {
-	
-	    @Autowired
-	    JIRARestService jIRARestService;
-	
-	
 
-    @GetMapping("getAllSprints/{projectId}")
-    public GetSprintResponse getAllSprints(@PathVariable String projectId) { 
-    	GetSprintResponse response = new GetSprintResponse();
+	@Autowired
+	JIRARestService jIRARestService;
 
+	@GetMapping("getAllSprints/{projectId}")
+	public GetSprintResponse getAllSprints(@PathVariable String projectId) {
+		GetSprintResponse response = new GetSprintResponse();
 
-    	ArrayList<SprintInfoDto > list = new ArrayList<>();
+		ArrayList<SprintInfoDto> list = new ArrayList<>();
 
-    	list.addAll( jIRARestService.getAllSprintsByProjectId(Integer.parseInt(projectId)));
+		list.addAll(jIRARestService.getAllSprintsByProjectId(Integer.parseInt(projectId)));
 
-    	if(list != null) {
-    		response.setCode(200);
-    		response.setMessage("success");
-    		response.setData(list);
-    		return response;
-    	}else {
-    		response.setCode(404);
-    		response.setMessage("invalid");
-    		return response;
-    	}
+		if (list != null) {
+			response.setCode(200);
+			response.setMessage("success");
+			response.setData(list);
+			return response;
+		} else {
+			response.setCode(404);
+			response.setMessage("invalid");
+			return response;
+		}
 
-    }
-
+	}
 
 }

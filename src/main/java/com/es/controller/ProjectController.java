@@ -18,64 +18,46 @@ import com.es.service.ClientCredentialsService;
 import com.es.service.JIRARestService;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/estimation-tool/")
 public class ProjectController {
-    @Autowired
-    JIRARestService jIRARestService;
-    
-    @Autowired
-    ClientCredentialsService clientCredentialsService;
+	@Autowired
+	JIRARestService jIRARestService;
 
-    @GetMapping("/abc")
-    public String getEmployee() {
+	@Autowired
+	ClientCredentialsService clientCredentialsService;
 
-        return "index";
-    }
-    
-    @GetMapping("/")
-    public String getLogin() {
+	@GetMapping("/abc")
+	public String getEmployee() {
 
-        return "index3";
-    }
+		return "index";
+	}
 
-//    @GetMapping("/viewproject")
-//    public String viewProject(Model model) {
-//        model.addAttribute("getAllProjects",jIRARestService.getAllProjects());
-//        String response = jIRARestService.getAllProjects();
-//        System.out.println("hittttt ::: "+ response);
-//        return "index";
-//    }
-//    
-//    @GetMapping("/viewprojectL")
-//    public String viewProjectL(Model model) {
-//        model.addAttribute("getAllProjects",jIRARestService.getAllProjects());
-//        String response = jIRARestService.getAllProjects();
-//        System.out.println("LLLL ::: "+ response);
-//        return "index3";
-//    }
+	@GetMapping("/")
+	public String getLogin() {
 
-    @GetMapping("getAllProjects/{id}")
-    public GetProjectResponse getAllProjects(@PathVariable String id ) { 
-    	
-    	
-    	GetProjectResponse response = new GetProjectResponse();
+		return "index3";
+	}
 
+	@GetMapping("getAllProjects/{id}")
+	public GetProjectResponse getAllProjects(@PathVariable String id) {
 
-    	ArrayList<ProjectInfoDto > list = new ArrayList<>();
+		GetProjectResponse response = new GetProjectResponse();
 
-    	list.addAll( jIRARestService.getAllProjects(Integer.parseInt(id)));
+		ArrayList<ProjectInfoDto> list = new ArrayList<>();
 
-    	if(list != null) {
-    		response.setCode(200);
-    		response.setMessage("success");
-    		response.setData(list);
-    		return response;
-    	}else {
-    		response.setCode(404);
-    		response.setMessage("invalid");
-    		return response;
-    	}
+		list.addAll(jIRARestService.getAllProjects(Integer.parseInt(id)));
 
-    }
+		if (list != null) {
+			response.setCode(200);
+			response.setMessage("success");
+			response.setData(list);
+			return response;
+		} else {
+			response.setCode(404);
+			response.setMessage("invalid");
+			return response;
+		}
+
+	}
 
 }
