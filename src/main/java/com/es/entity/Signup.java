@@ -16,6 +16,7 @@ public class Signup {
 	private String email;
 	private String password;
 	private String userName;
+	private String resetToken;
 
 	public String getUserName() {
 		return userName;
@@ -47,6 +48,15 @@ public class Signup {
 
 	public void setEmail(String email) {
 		this.email = email;
+	
+	}
+
+	public String getResetToken() {
+		return resetToken;
+	}
+
+	public void setResetToken(String resetToken) {
+		this.resetToken = resetToken;
 	}
 
 }
