@@ -18,51 +18,52 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+
 @RestController
 @RequestMapping("estimation-tool/login")
 public class LoginController {
-	@Autowired
-	EstimationMasterService eser;
-	@Autowired
-	SignupService signupService;
+    @Autowired
+    EstimationMasterService eser;
+    @Autowired
+    SignupService signupService;
 
-	@GetMapping("/get_employee")
-	public String employee(@RequestParam Integer id) {
-		EstimationMaster employeeMasterEntity = eser.getEmployee(id);
-		return employeeMasterEntity.toString();
-	}
+    @GetMapping("/get_employee")
+    public String employee(@RequestParam Integer id) {
+        EstimationMaster employeeMasterEntity = eser.getEmployee(id);
+        return employeeMasterEntity.toString();
+    }
+    
+    @PostMapping("")
+    public LoginResponse userLogin(HttpServletRequest request, Model model) {
+        LoginResponse response = new LoginResponse();
 
-	@PostMapping("")
-	public LoginResponse userLogin(HttpServletRequest request, Model model) {
-		LoginResponse response = new LoginResponse();
+        // Retrieve form data using HttpServletRequest
+        String email = request.getParameter("email"); // Assuming "email" is the name attribute of the email input field in your form
+        String password = request.getParameter("password"); // Assuming "password" is the name attribute of the password input field in your form
 
-		String email = request.getParameter("email");
-		String password = request.getParameter("password");
+        Signup signup = new Signup();
+        signup.setUserName(email);
+        signup.setPassword(password);
 
-		Signup signup = new Signup();
-		signup.setUserName(email);
-		signup.setPassword(password);
+        Signup loginDetails = signupService.getUserByUserName(email);
 
-		Signup loginDetails = signupService.getUserByUserName(email);
+        if (loginDetails != null) {
+            if (signup.getUserName().equals(loginDetails.getUserName()) && signup.getPassword().equals(loginDetails.getPassword())) {
+                response.setCode(SuccessEnum.SUCCESS_LOGIN.getCode());
+                response.setMessage(SuccessEnum.SUCCESS_LOGIN.getMessage());
+                response.setData(loginDetails);
+            } else {
+                response.setCode(ExceptionEnum.INVALID_USER.getErrorCode());
+                response.setMessage(ExceptionEnum.INVALID_USER.getMessage());
+                response.setError(true);
+            }
+        } else {
+            response.setCode(ExceptionEnum.INVALID_USER.getErrorCode());
+            response.setMessage(ExceptionEnum.INVALID_USER.getMessage());
+            response.setError(true);
+        }
 
-		if (loginDetails != null) {
-			if (signup.getUserName().equals(loginDetails.getUserName())
-					&& signup.getPassword().equals(loginDetails.getPassword())) {
-				response.setCode(SuccessEnum.SUCCESS_LOGIN.getCode());
-				response.setMessage(SuccessEnum.SUCCESS_LOGIN.getMessage());
-				response.setData(loginDetails);
-			} else {
-				response.setCode(ExceptionEnum.INVALID_USER.getErrorCode());
-				response.setMessage(ExceptionEnum.INVALID_USER.getMessage());
-				response.setError(true);
-			}
-		} else {
-			response.setCode(ExceptionEnum.INVALID_USER.getErrorCode());
-			response.setMessage(ExceptionEnum.INVALID_USER.getMessage());
-			response.setError(true);
-		}
-
-		return response;
-	}
+        return response;
+    }
 
 }

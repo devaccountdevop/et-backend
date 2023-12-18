@@ -3,7 +3,7 @@ package com.es.dto;
 public class AiEstimatesDto {
 	
 	private int id;
-	private String Aiestimates;
+	private int Aiestimates;
 	private int test;
 	private String taskId;
 	public int getId() {
@@ -12,10 +12,10 @@ public class AiEstimatesDto {
 	public void setId(int id) {
 		this.id = id;
 	}
-	public String getAiestimates() {
+	public int getAiestimates() {
 		return Aiestimates;
 	}
-	public void setAiestimates(String aiestimates) {
+	public void setAiestimates(int aiestimates) {
 		Aiestimates = aiestimates;
 	}
 	public int getTest() {
@@ -30,7 +30,7 @@ public class AiEstimatesDto {
 	public void setTaskId(String taskId) {
 		this.taskId = taskId;
 	}
-	public AiEstimatesDto(int id, String aiestimates, int test, String taskId) {
+	public AiEstimatesDto(int id, int aiestimates, int test, String taskId) {
 		super();
 		this.id = id;
 		Aiestimates = aiestimates;

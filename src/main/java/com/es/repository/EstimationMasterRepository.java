@@ -2,9 +2,11 @@ package com.es.repository;
 
 import java.util.List;
 
-import com.es.entity.EstimationMaster;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import com.es.entity.EstimationMaster;
+
 
 @Repository
 public interface EstimationMasterRepository extends JpaRepository<EstimationMaster, Integer> {

@@ -13,51 +13,82 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.es.dto.ProjectInfoDto;
+import com.es.entity.ClientCredentials;
+import com.es.entity.ImportProjects;
 import com.es.response.GetProjectResponse;
 import com.es.service.ClientCredentialsService;
+import com.es.service.ImportClientService;
+import com.es.service.ImportProjectsService;
 import com.es.service.JIRARestService;
 
 @RestController
 @RequestMapping("/estimation-tool/")
 public class ProjectController {
-	@Autowired
-	JIRARestService jIRARestService;
+    @Autowired
+    JIRARestService jIRARestService;
+    
+    @Autowired
+    ClientCredentialsService clientCredentialsService;
+    
+    @Autowired
+    ImportProjectsService importProjectsService; 
 
-	@Autowired
-	ClientCredentialsService clientCredentialsService;
+    @GetMapping("/abc")
+    public String getEmployee() {
 
-	@GetMapping("/abc")
-	public String getEmployee() {
+        return "index";
+    }
+    
+    @GetMapping("/")
+    public String getLogin() {
 
-		return "index";
-	}
+        return "index3";
+    }
 
-	@GetMapping("/")
-	public String getLogin() {
+//    @GetMapping("/viewproject")
+//    public String viewProject(Model model) {
+//        model.addAttribute("getAllProjects",jIRARestService.getAllProjects());
+//        String response = jIRARestService.getAllProjects();
+//        System.out.println("hittttt ::: "+ response);
+//        return "index";
+//    }
+//    
+//    @GetMapping("/viewprojectL")
+//    public String viewProjectL(Model model) {
+//        model.addAttribute("getAllProjects",jIRARestService.getAllProjects());
+//        String response = jIRARestService.getAllProjects();
+//        System.out.println("LLLL ::: "+ response);
+//        return "index3";
+//    }
 
-		return "index3";
-	}
+    @GetMapping("getAllProjects/{clientId}")
+    public GetProjectResponse getAllProjects(@PathVariable String clientId) {
+        GetProjectResponse response = new GetProjectResponse();
+        ArrayList<ImportProjects> list = new ArrayList<>();
 
-	@GetMapping("getAllProjects/{id}")
-	public GetProjectResponse getAllProjects(@PathVariable String id) {
+        try {
+        	ClientCredentials clientCredentials = new ClientCredentials();
+        	 clientCredentials = clientCredentialsService.getClientCredentials(Integer.parseInt(clientId));
+        	if(clientCredentials != null) {
+            list.addAll(importProjectsService.getProjectsByJiraUserName(clientCredentials.getJiraUserName()));
+        	}
+            if (list != null && !list.isEmpty()) {
+                response.setCode(200); // Use HttpStatus constants
+                response.setMessage("success");
+                response.setData(list);
+            } else {
+                response.setCode(404); // Use HttpStatus constants
+                response.setMessage("invalid");
+            }
+        } catch (Exception e) {
+            // Handle exceptions (e.g., log the error)
+            e.printStackTrace(); // Log the exception or handle it based on your requirements.
+            response.setCode(500); // Use HttpStatus constants
+            response.setMessage("error");
+        }
 
-		GetProjectResponse response = new GetProjectResponse();
+        return response;
+    }
 
-		ArrayList<ProjectInfoDto> list = new ArrayList<>();
-
-		list.addAll(jIRARestService.getAllProjects(Integer.parseInt(id)));
-
-		if (list != null) {
-			response.setCode(200);
-			response.setMessage("success");
-			response.setData(list);
-			return response;
-		} else {
-			response.setCode(404);
-			response.setMessage("invalid");
-			return response;
-		}
-
-	}
 
 }
