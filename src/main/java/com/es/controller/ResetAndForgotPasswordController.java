@@ -63,6 +63,26 @@ public class ResetAndForgotPasswordController {
 		}
 	}
 
+	@PostMapping("/resetpasswordbymail")
+	public ResetPasswordResponse forgotPassword(HttpServletRequest request, Model model) {
+
+		ResetPasswordResponse response = new ResetPasswordResponse();
+
+		String newPassword = request.getParameter("newPassword");
+		String userName = request.getParameter("userName");
+		Signup signup = new Signup();
+		signup = resetPasswordService.resetPasswordByMail(userName, newPassword);
+		if (signup != null) {
+			response.setCode(SuccessEnum.SUCCESS_TYPE.getCode());
+			response.setMessage(SuccessEnum.SUCCESS_TYPE.getMessage());
+			response.setData(signup);
+			return response;
+		} else {
+			response.setCode(ExceptionEnum.INVALID_USER.getErrorCode());
+			response.setMessage(ExceptionEnum.INVALID_USER.getMessage());
+			return response;
+		}
+	}
 	@PostMapping("/resetpassword")
 	public ResetPasswordResponse resetPassword(HttpServletRequest request, Model model) {
 
@@ -84,4 +104,5 @@ public class ResetAndForgotPasswordController {
 			return response;
 		}
 	}
+	
 }
