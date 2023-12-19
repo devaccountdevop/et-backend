@@ -18,6 +18,9 @@ import com.es.entity.ClientCredentials;
 import com.es.entity.ImportProjects;
 import com.es.entity.ImportSprint;
 import com.es.entity.ImportTask;
+import com.es.response.ExceptionEnum;
+import com.es.response.ImportExcelFileResponse;
+import com.es.response.SuccessEnum;
 import com.es.service.ClientCredentialsService;
 import com.es.service.ImportClientService;
 import com.es.service.ImportProjectsService;
@@ -46,84 +49,36 @@ public class ImportExcelFileController {
 	@Autowired
 	ClientCredentialsService clientCredentialsService;
 
-//	@PostMapping(value = "/uploadFile/{Id}", consumes = "multipart/form-data")
-//	public ResponseEntity<Object> fileUpload(@RequestParam("file") MultipartFile file, @PathVariable String Id) {
-//		try {
-//		    List<ClientCredentials> clientList = excelservice.getExcelDataAsList(file.getInputStream(),
-//		            Integer.parseInt(Id));
-//
-//		    if (!clientList.isEmpty()) {
-//		        int noOfClientRecords = excelservice.saveClientData(clientList);
-//
-//		        // Check if client records were successfully saved
-//		        if (noOfClientRecords > 0) {
-//		            List<ImportProjects> projectList = importProjectsService
-//		                    .getProjectDataAsList(file.getInputStream());
-//
-//		            List<ImportSprint> sprintList = importSprintService.getSprintDataAsList(file.getInputStream());
-//
-//		            // Parse Task List Data
-//		            List<ImportTask> taskList = importTaskService.getTaskDataAsList(file.getInputStream());
-//		            int noOfTaskRecords = importTaskService.saveTaskData(taskList);
-//
-//		            // Check if task records were successfully saved
-//		            if (noOfTaskRecords > 0) {
-//		                // Continue with project and sprint logic...
-//
-//		                if (!projectList.isEmpty()) {
-//		                    int noOfProjectRecords = importProjectsService.saveProjectData(projectList);
-//
-//		                    int noOfSprintRecords = importSprintService.saveSprintData(sprintList);
-//
-//		                    // Check if project records were successfully saved
-//		                    if (noOfProjectRecords > 0) {
-//		                        return new ResponseEntity<>(
-//		                                "File uploaded successfully. Number of client records saved: " + noOfClientRecords
-//		                                        + ". Number of project records saved: " + noOfProjectRecords
-//		                                        + ". Number of sprint records saved: " + noOfSprintRecords
-//		                                        + ". Number of task records saved: " + noOfTaskRecords,
-//		                                HttpStatus.OK);
-//		                    } else {
-//		                        return new ResponseEntity<>("Error saving project records.",
-//		                                HttpStatus.INTERNAL_SERVER_ERROR);
-//		                    }
-//		                } else {
-//		                    return new ResponseEntity<>("No project data to save.", HttpStatus.BAD_REQUEST);
-//		                }
-//		            } else {
-//		                return new ResponseEntity<>("Error saving task records.", HttpStatus.INTERNAL_SERVER_ERROR);
-//		            }
-//		        } else {
-//		            return new ResponseEntity<>("Error saving client records.", HttpStatus.INTERNAL_SERVER_ERROR);
-//		        }
-//		    } else {
-//		        return new ResponseEntity<>("No client data to save.", HttpStatus.BAD_REQUEST);
-//		    }
-//		} catch (IOException e) {
-//		    e.printStackTrace();
-//		    return new ResponseEntity<>("Error processing the file.", HttpStatus.INTERNAL_SERVER_ERROR);
-//		}
-//	}
+
 	@PostMapping(value = "/uploadFile/{Id}", consumes = "multipart/form-data")
 	@Transactional
-	public ResponseEntity<Object> fileUpload(@RequestParam("file") MultipartFile file, @PathVariable String Id) {
-	    // Check if the file is an Excel file
-	    if (!isExcelFile(file)) {
-	        return new ResponseEntity<>("Invalid file format. Only .xlsx files are allowed.", HttpStatus.BAD_REQUEST);
-	    }
+	public ImportExcelFileResponse fileUpload(@RequestParam("file") MultipartFile file, @PathVariable String Id) {
+		
+		ImportExcelFileResponse response =  new ImportExcelFileResponse();
+		if (!isExcelFile(file)) {
+			//String message = "Invalid file format. Only .xlsx files are allowed";
+            response.setCode(ExceptionEnum.DATA_NOT_FOUND.getErrorCode());
+            response.setMessage("Invalid file format. Only .xlsx files are allowed.");
+            return response;
+        }
+
 
 	    try {
 	        List<ClientCredentials> clientList = excelservice.getClientDataAsList(file.getInputStream(), Integer.parseInt(Id));
 
 	        if (clientList.isEmpty()) {
-	            return new ResponseEntity<>("No client data to save.", HttpStatus.BAD_REQUEST);
-	        }
+                response.setCode(ExceptionEnum.DATA_NOT_FOUND.getErrorCode());
+                response.setMessage("No client data to save.");
+                return response;
+            }
 
 	        int noOfClientRecords = excelservice.saveClientData(clientList);
 
 	        if (noOfClientRecords == 0) {
-	            return new ResponseEntity<>("Error saving client records.", HttpStatus.INTERNAL_SERVER_ERROR);
-	        }
+                response.setCode(ExceptionEnum.UNIVERSAL_ERROR.getErrorCode());
+                response.setMessage("Error saving client records.");
+                return response;
+            }
 
 	        List<ImportProjects> projectList = importProjectsService.getProjectDataAsList(file.getInputStream());
 	        List<ImportSprint> sprintList = importSprintService.getSprintDataAsList(file.getInputStream());
@@ -132,28 +87,36 @@ public class ImportExcelFileController {
 	        int noOfTaskRecords = importTaskService.saveTaskData(taskList);
 
 	        if (noOfTaskRecords == 0) {
-	            return new ResponseEntity<>("Error saving task records.", HttpStatus.INTERNAL_SERVER_ERROR);
-	        }
+                response.setCode(ExceptionEnum.UNIVERSAL_ERROR.getErrorCode());
+                response.setMessage("Error saving task records.");
+                return response;
+            }
 
 	        if (projectList.isEmpty()) {
-	            return new ResponseEntity<>("No project data to save.", HttpStatus.BAD_REQUEST);
-	        }
+                response.setCode(ExceptionEnum.UNIVERSAL_ERROR.getErrorCode());
+                response.setMessage("No project data to save.");
+                return response;
+            }
 
 	        int noOfProjectRecords = importProjectsService.saveProjectData(projectList);
 	        int noOfSprintRecords = importSprintService.saveSprintData(sprintList);
 
 	        if (noOfProjectRecords == 0) {
-	            return new ResponseEntity<>("Error saving project records.", HttpStatus.INTERNAL_SERVER_ERROR);
-	        }
+                response.setCode(ExceptionEnum.UNIVERSAL_ERROR.getErrorCode());
+                response.setMessage("Error saving project records.");
+                return response;
+            }
 
-	        return new ResponseEntity<>("File uploaded successfully. Number of client records saved: " + noOfClientRecords +
-	                ". Number of project records saved: " + noOfProjectRecords +
-	                ". Number of sprint records saved: " + noOfSprintRecords +
-	                ". Number of task records saved: " + noOfTaskRecords, HttpStatus.OK);
+	        response.setCode(SuccessEnum.SUCCESS_TYPE.getCode());
+            response.setMessage("File uploaded successfully.");
+
+            return response;
 	    } catch (IOException e) {
-	        e.printStackTrace();
-	        return new ResponseEntity<>("Error processing the file.", HttpStatus.INTERNAL_SERVER_ERROR);
-	    }
+            e.printStackTrace();
+            response.setCode(ExceptionEnum.UNIVERSAL_ERROR.getErrorCode());
+            response.setMessage("Error processing the file.");
+            return response;
+        }
 	}
 	private boolean isExcelFile(MultipartFile file) {
 	    
