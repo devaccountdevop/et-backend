@@ -38,6 +38,23 @@ public class ResetPasswordService {
             return null;
         }
     }
+    
+    public Signup resetPasswordByMail(String username, String newPassword) {
+        Signup signup = signupRepository.findByUserName(username);
+
+        // Check if the user exists
+        if (signup != null) {
+                // Update the password with the new password
+                signup.setPassword(newPassword);
+                // Save the updated user to the repository
+                signupRepository.save(signup);
+                return signup;
+            } else {
+                // Return null or throw an exception to indicate incorrect old password
+                return null;
+            }
+       
+    }
 
 	
 
