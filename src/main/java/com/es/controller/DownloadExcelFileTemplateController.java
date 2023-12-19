@@ -1,0 +1,39 @@
+package com.es.controller;
+
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+
+@RestController
+@RequestMapping("/estimation-tool")
+
+public class DownloadExcelFileTemplateController {
+	
+	@GetMapping("/downloadtemplate")
+	public ResponseEntity<InputStreamResource> downloadExcelTemplate() throws IOException {
+        
+        InputStream inputStream = new ClassPathResource("templates/template.xlsx").getInputStream();
+
+       
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=template.xlsx");
+
+       
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(new InputStreamResource(inputStream));
+    }
+}
+
+
+
