@@ -3,6 +3,7 @@ package com.es.entity;
 import java.util.List;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -13,12 +14,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
-
-
 @Entity
 @Table(name = "jira_task")
 public class ImportTask {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
@@ -28,68 +27,124 @@ public class ImportTask {
 	private String taskType;
 	private String taskPriority;
 	private String taskStatus;
+	@Column(length=3000)
 	private String taskDescription;
 	@OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "estimates_id") // Provide the appropriate column name
-    private TaskEstimates estimates;
+	@JoinColumn(name = "estimates_id") // Provide the appropriate column name
+	private TaskEstimates estimates;
 	private int threePointEstimate;
-	private String aiEstimate;
+	private int aiEstimate;
 	private int actual;
 	@ElementCollection
 	private List<String> labels;
-	
+
 	private int riskFactor;
+	private int originalEstimate;
+	private String storyPoints;
+
+	public ImportTask(int id, int sprintId, String summary, String taskId, String taskType, String taskPriority,
+			String taskStatus, String taskDescription, TaskEstimates estimates, int threePointEstimate, int aiEstimate,
+			int actual, List<String> labels, int riskFactor, int originalEstimate, String storyPoints) {
+		super();
+		this.id = id;
+		this.sprintId = sprintId;
+		this.summary = summary;
+		this.taskId = taskId;
+		this.taskType = taskType;
+		this.taskPriority = taskPriority;
+		this.taskStatus = taskStatus;
+		this.taskDescription = taskDescription;
+		this.estimates = estimates;
+		this.threePointEstimate = threePointEstimate;
+		this.aiEstimate = aiEstimate;
+		this.actual = actual;
+		this.labels = labels;
+		this.riskFactor = riskFactor;
+		this.originalEstimate = originalEstimate;
+		this.storyPoints = storyPoints;
+	}
+
+	public int getOriginalEstimate() {
+		return originalEstimate;
+	}
+
+	public void setOriginalEstimate(int originalEstimate) {
+		this.originalEstimate = originalEstimate;
+	}
+
+	public String getStoryPoints() {
+		return storyPoints;
+	}
+
+	public void setStoryPoints(String storyPoints) {
+		this.storyPoints = storyPoints;
+	}
+
 	public int getId() {
 		return id;
 	}
+
 	public void setId(int id) {
 		this.id = id;
 	}
+
 	public int getSprintId() {
 		return sprintId;
 	}
+
 	public void setSprintId(int sprintId) {
 		this.sprintId = sprintId;
 	}
+
 	public String getSummary() {
 		return summary;
 	}
+
 	public void setSummary(String summary) {
 		this.summary = summary;
 	}
+
 	public String getTaskId() {
 		return taskId;
 	}
+
 	public void setTaskId(String taskId) {
 		this.taskId = taskId;
 	}
+
 	public String getTaskType() {
 		return taskType;
 	}
+
 	public void setTaskType(String taskType) {
 		this.taskType = taskType;
 	}
+
 	public String getTaskPriority() {
 		return taskPriority;
 	}
+
 	public void setTaskPriority(String taskPriority) {
 		this.taskPriority = taskPriority;
 	}
+
 	public String getTaskStatus() {
 		return taskStatus;
 	}
+
 	public void setTaskStatus(String taskStatus) {
 		this.taskStatus = taskStatus;
 	}
 
-
 	public TaskEstimates getEstimates() {
 		return estimates;
 	}
+
 	public void setEstimates(TaskEstimates estimates) {
 		this.estimates = estimates;
 	}
-	//	public List<TaskEstimates> getEstimates() {
+
+	// public List<TaskEstimates> getEstimates() {
 //		return estimates;
 //	}
 //	public void setEstimates(List<TaskEstimates> estimates) {
@@ -98,43 +153,55 @@ public class ImportTask {
 	public int getThreePointEstimate() {
 		return threePointEstimate;
 	}
+
 	public void setThreePointEstimate(int threePointEstimate) {
 		this.threePointEstimate = threePointEstimate;
 	}
-	public String getAiEstimate() {
+
+	public int getAiEstimate() {
 		return aiEstimate;
 	}
-	public void setAiEstimate(String aiEstimate) {
+
+	public void setAiEstimate(int aiEstimate) {
 		this.aiEstimate = aiEstimate;
 	}
+
 	public int getActual() {
 		return actual;
 	}
+
 	public void setActual(int actual) {
 		this.actual = actual;
 	}
+
 	public int getRiskFactor() {
 		return riskFactor;
 	}
+
 	public void setRiskFactor(int riskFactor) {
 		this.riskFactor = riskFactor;
 	}
+
 	public List<String> getLabels() {
 		return labels;
 	}
+
 	public void setLabels(List<String> labels) {
 		this.labels = labels;
 	}
+
 	public String getTaskDescription() {
 		return taskDescription;
 	}
+
 	public void setTaskDescription(String taskDescription) {
 		this.taskDescription = taskDescription;
 	}
+
 	public ImportTask(int sprintId, String summary, String taskId, String taskType, String taskPriority,
-			String taskStatus, List<String> taskLabels, String taskDescription, TaskEstimates estimates, String aiEstimate) {
+			String taskStatus, List<String> taskLabels, String taskDescription, TaskEstimates estimates) {
 		super();
-		
+
 		this.sprintId = sprintId;
 		this.summary = summary;
 		this.taskId = taskId;
@@ -144,12 +211,13 @@ public class ImportTask {
 		this.labels = taskLabels;
 		this.taskDescription = taskDescription;
 		this.estimates = estimates;
-		this.aiEstimate = aiEstimate;
 	}
+
 	public ImportTask() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
+
 	public ImportTask(int sprintId, String summary, String taskId, String taskType, String taskPriority,
 			String taskStatus, String taskDescription) {
 		super();
@@ -161,57 +229,58 @@ public class ImportTask {
 		this.taskStatus = taskStatus;
 		this.taskDescription = taskDescription;
 	}
-	public ImportTask(int sprintId, String summary, String taskId, String taskDescription, int threePointEstimate, String aiEstimate, int actual, List<String> labels,
-			int riskFactor) {
+
+	public ImportTask(int sprintId, String summary, String taskId, String taskDescription, int threePointEstimate,
+			int aiEstimate, int actual, List<String> labels, int riskFactor) {
 		super();
 		this.sprintId = sprintId;
 		this.summary = summary;
 		this.taskId = taskId;
 		this.taskDescription = taskDescription;
-		//this.estimates = estimates;
+		// this.estimates = estimates;
 		this.threePointEstimate = threePointEstimate;
 		this.aiEstimate = aiEstimate;
 		this.actual = actual;
 		this.labels = labels;
 		this.riskFactor = riskFactor;
 	}
-	
 
-	
 	public ImportTask(int id, int sprintId, String summary, String taskId, String taskType, String taskPriority,
-		String taskStatus, String taskDescription, TaskEstimates estimates, int threePointEstimate, String aiEstimate,
-		int actual, List<String> labels, int riskFactor) {
-	super();
-	this.id = id;
-	this.sprintId = sprintId;
-	this.summary = summary;
-	this.taskId = taskId;
-	this.taskType = taskType;
-	this.taskPriority = taskPriority;
-	this.taskStatus = taskStatus;
-	this.taskDescription = taskDescription;
-	this.estimates = estimates;
-	this.threePointEstimate = threePointEstimate;
-	this.aiEstimate = aiEstimate;
-	this.actual = actual;
-	this.labels = labels;
-	this.riskFactor = riskFactor;
-}
-public ImportTask(int sprintId, String summary, String taskId, String taskDescription, int threePointEstimate, String aiEstimate, int actual, List<String> labels,
-		int riskFactor,TaskEstimates estimates) {
-	super();
-	this.sprintId = sprintId;
-	this.summary = summary;
-	this.taskId = taskId;
-	this.taskDescription = taskDescription;
-	this.estimates = estimates;
-	this.threePointEstimate = threePointEstimate;
-	this.aiEstimate = aiEstimate;
-	this.actual = actual;
-	this.labels = labels;
-	this.riskFactor = riskFactor;
-}
-	
-	
+			String taskStatus, String taskDescription, TaskEstimates estimates, int threePointEstimate, int aiEstimate,
+			int actual, List<String> labels, int riskFactor) {
+		super();
+		this.id = id;
+		this.sprintId = sprintId;
+		this.summary = summary;
+		this.taskId = taskId;
+		this.taskType = taskType;
+		this.taskPriority = taskPriority;
+		this.taskStatus = taskStatus;
+		this.taskDescription = taskDescription;
+		this.estimates = estimates;
+		this.threePointEstimate = threePointEstimate;
+		this.aiEstimate = aiEstimate;
+		this.actual = actual;
+		this.labels = labels;
+		this.riskFactor = riskFactor;
+	}
+
+	public ImportTask(int sprintId, String summary, String taskId, String taskDescription, int threePointEstimate,
+			int aiEstimate, int actual, List<String> labels, int riskFactor, TaskEstimates estimates, String storyPoints, int originalEstimate, String priority) {
+		super();
+		this.sprintId = sprintId;
+		this.summary = summary;
+		this.taskId = taskId;
+		this.taskDescription = taskDescription;
+		this.estimates = estimates;
+		this.threePointEstimate = threePointEstimate;
+		this.aiEstimate = aiEstimate;
+		this.actual = actual;
+		this.labels = labels;
+		this.riskFactor = riskFactor;
+		this.storyPoints = storyPoints;
+		this.originalEstimate = originalEstimate;
+		this.taskPriority = priority;
+	}
 
 }
