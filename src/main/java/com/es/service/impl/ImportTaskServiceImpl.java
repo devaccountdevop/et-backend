@@ -108,6 +108,7 @@ public class ImportTaskServiceImpl implements ImportTaskService {
 	    String value9 = rowData.get(11); // task status
 	    List<String> value10 = new ArrayList<>(); // labels
 	    String value11 = rowData.get(15); // task description
+	    String value12 = rowData.get(16);
    TaskEstimates estimates  = new TaskEstimates();
    estimates.setTaskId(value6);
    
@@ -128,7 +129,7 @@ public class ImportTaskServiceImpl implements ImportTaskService {
 	        }
 	    }
 
-	    return new ImportTask(value3, value5, value6, value7, value8, value9, value10, value11, estimates);
+	    return new ImportTask(value3, value5, value6, value7, value8, value9, value10, value11, estimates, value12);
 	}
 
 
@@ -185,6 +186,7 @@ public class ImportTaskServiceImpl implements ImportTaskService {
 	                existingTask.setLabels(importTask.getLabels());
 	                existingTask.setTaskDescription(importTask.getTaskDescription());
 	                existingTask.setThreePointEstimate(5);
+	                existingTask.setAiEstimate(importTask.getAiEstimate());
 	                existingTask.setRiskFactor(6);
 	                existingTask.setOriginalEstimate(importTask.getOriginalEstimate());
 	                existingTask.setStoryPoints(importTask.getStoryPoints());

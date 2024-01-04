@@ -24,8 +24,8 @@ public class SignupServiceImpl implements SignupService{
 
 	@Override
 	public Signup getUserByEmail(String email) {
-		Optional<Signup> list = Optional.of(signupRepository.findByEmail(email));
-		return ! list.isPresent() ? null: list.get();
+	    Optional<Signup> userOptional = Optional.ofNullable(signupRepository.findByEmail(email));
+	    return userOptional.orElse(null);
 	}
 
 	@Override
