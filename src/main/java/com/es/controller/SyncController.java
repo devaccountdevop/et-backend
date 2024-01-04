@@ -25,77 +25,77 @@ import com.es.service.SignupService;
 @RestController
 @RequestMapping("/estimation-tool")
 public class SyncController {
-	
+
 	@Autowired
 	JIRARestService jiraRestService;
-	
+
 	@Autowired
 	ImportProjectsService importProjectsService;
-	
+
 	@Autowired
 	ImportSprintService importSprintService;
-	
+
 	@Autowired
 	ImportTaskService importTaskService;
-	
+
 	@Autowired
 	SignupService signupService;
-	
+
 	@GetMapping("/sync/{userId}/{clientId}")
 	public SyncResponse syncAllDataWithJira(@PathVariable String userId, @PathVariable String clientId) {
-	    SyncResponse response = new SyncResponse();
-	    
-	    Signup signup = new Signup();
-	    signup =  signupService.getUserById(Integer.parseInt(userId));
-	    
-	    if(signup == null) {
-	    	response.setCode(ExceptionEnum.INVALID_USER.getErrorCode());
-	    	response.setMessage(ExceptionEnum.INVALID_USER.getMessage());
-	    	return response;
-	    	
-	    }
-	    List<ImportProjects> projectInfoList = jiraRestService.getAllProjects(Integer.parseInt(clientId));
+		SyncResponse response = new SyncResponse();
 
-	    if (!projectInfoList.isEmpty()) {
-	        List<ImportSprint> allSprints = new ArrayList<>();
-	        List<ImportTask> allTasks = new ArrayList<>();
+		Signup signup = new Signup();
+		signup = signupService.getUserById(Integer.parseInt(userId));
 
-	        for (ImportProjects project : projectInfoList) {
-	            List<ImportSprint> sprintInfoList = jiraRestService.getAllSprintsByProjectId(project.getProjectId(), Integer.parseInt(clientId));
-                       
-	            if (!sprintInfoList.isEmpty()) {
-	                allSprints.addAll(sprintInfoList);
+		if (signup == null) {
+			response.setCode(ExceptionEnum.INVALID_USER.getErrorCode());
+			response.setMessage(ExceptionEnum.INVALID_USER.getMessage());
+			return response;
+		}
+		List<ImportProjects> projectInfoList = jiraRestService.getAllProjects(Integer.parseInt(clientId));
 
-	                List<ImportTask> taskList = new ArrayList<>();
-	                for (ImportSprint sprint : sprintInfoList) {
-	                    taskList.addAll(jiraRestService.getAllTasksBySprintId(sprint.getSprintId(), project.getProjectId(),Integer.parseInt(clientId)));
-	                }
-	                allTasks.addAll(taskList);
-	            }
-	        }
+		if (!projectInfoList.isEmpty()) {
+			List<ImportSprint> allSprints = new ArrayList<>();
+			List<ImportTask> allTasks = new ArrayList<>();
 
-	        if (!allSprints.isEmpty() && !allTasks.isEmpty()) {
-	            // Save all data to your database or perform any other necessary actions
-	            importProjectsService.saveProjectData(projectInfoList);
-	            importSprintService.saveSprintData(allSprints);
-	            importTaskService.saveTaskData(allTasks);
+			for (ImportProjects project : projectInfoList) {
+				List<ImportSprint> sprintInfoList = jiraRestService.getAllSprintsByProjectId(project.getProjectId(),
+						Integer.parseInt(clientId));
 
-	            List<Object> object = new ArrayList<>();
-	            object.addAll(projectInfoList);
-	            object.addAll(allSprints);
-	            object.addAll(allTasks);
+				if (!sprintInfoList.isEmpty()) {
+					allSprints.addAll(sprintInfoList);
 
-	            response.setCode(200);
-	            response.setData(object);
-	            return response;
-	        }
-	    }
+					List<ImportTask> taskList = new ArrayList<>();
+					for (ImportSprint sprint : sprintInfoList) {
+						taskList.addAll(jiraRestService.getAllTasksBySprintId(sprint.getSprintId(),
+								project.getProjectId(), Integer.parseInt(clientId)));
+					}
+					allTasks.addAll(taskList);
+				}
+			}
 
-	    // Handle the case where no data is found or processed
-	    response.setCode(404);
-	    response.setMessage("No data found or processed.");
-	    return response;
+			if (!allSprints.isEmpty() && !allTasks.isEmpty()) {
+				// Save all data to your database or perform any other necessary actions
+				importProjectsService.saveProjectData(projectInfoList);
+				importSprintService.saveSprintData(allSprints);
+				importTaskService.saveTaskData(allTasks);
+
+				List<Object> object = new ArrayList<>();
+				object.addAll(projectInfoList);
+				object.addAll(allSprints);
+				object.addAll(allTasks);
+
+				response.setCode(200);
+				response.setData(object);
+				return response;
+			}
+		}
+
+		// Handle the case where no data is found or processed
+		response.setCode(404);
+		response.setMessage("No data found or processed.");
+		return response;
 	}
-
 
 }

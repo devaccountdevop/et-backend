@@ -1,19 +1,14 @@
 package com.es.service;
 
-import org.springframework.stereotype.Service;
+import java.util.Map;
 
-@Service
-public class AiEstimatesService {
+import com.es.dto.AiTaskEstimateRequestDto;
+import com.es.response.AiEstimatesResponse;
 
-	public double weightedAverage(int lowEstimates, int highEstimates, int realisticEstimates) {
-		
-		return lowEstimates + 4 * realisticEstimates + highEstimates ;
-		
-	}
-public double standardDeviation(int lowEstimates, int highEstimates) {
-		
-		return highEstimates - lowEstimates ;
-		
-	}
+public interface AiEstimatesService {
 
+	AiEstimatesResponse getAiEstimates(AiTaskEstimateRequestDto request) throws Exception;
+
+	void saveCustomFields(Map<String,Object> object) throws Exception;
+	 AiTaskEstimateRequestDto dataForAiEstimates(Map<String,Object> object);
 }

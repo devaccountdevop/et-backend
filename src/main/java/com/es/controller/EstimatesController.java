@@ -36,11 +36,8 @@ import com.es.service.JIRARestService;
 		        List<Map<String, Object>> updateTaskList = (List<Map<String, Object>>) updateTaskObj;
 		        for (Map<String, Object> task : updateTaskList) {
 		            String taskId = (String) task.get("taskId");
-		            int aiEstimates = (int) task.get("aiEstimate");
-//		            estimates.setTaskId(taskId);
-//		            estimates.setTaskId(aiEstimates);
+		            String aiEstimates = String.valueOf(task.get("aiEstimate"));
 
-		            //estimatesService.saveEstimates(estimates);
 		            this.jiraRestService.updateToJIRA(taskId, aiEstimates);
 
 		            if (taskId == null) {
@@ -56,13 +53,12 @@ import com.es.service.JIRARestService;
 		    } else if(updateTaskObj != null){
 		    	
 		         String taskId = (String) ((Map<String, Object>) updateTaskObj).get("taskId");
-		         int aiEstimates = (int) ((Map<String, Object>) updateTaskObj).get("aiEstimate");
+		         String aiEstimates = String.valueOf(((Map<String, Object>) updateTaskObj).get("aiEstimate"));
 		         this.jiraRestService.updateToJIRA(taskId, aiEstimates);
 		         response.setData(updateTaskObj); 
 			        response.setCode(SuccessEnum.SUCCESS_TYPE.getCode());
 			        response.setMessage(SuccessEnum.SUCCESS_TYPE.getMessage());
-			        return response;
-		       
+			        return response; 
 		    }else {
 		        // Handle if it's an unexpected type
 		        response.setCode(ExceptionEnum.FAILED_TYPE.getErrorCode());
@@ -91,20 +87,12 @@ import com.es.service.JIRARestService;
 
 		        // Create a TaskEstimates object and set values
 		        TaskEstimates taskEstimates = new TaskEstimates();
-
-		        // Extract values from the map and handle null values appropriately
-//		        Object lowValue = updateTaskObj.get("estimates.low");
-//		        Object realisticValue = updateTaskObj.get("estimates.realistic");
-//		        Object highValue = updateTaskObj.get("estimates.high");
-//		        Object taskIdValue = updateTaskObj.get("taskId");
-
 		        // Set values in TaskEstimates object after checking for null
 		        taskEstimates.setLow(lowValue != null ? Integer.parseInt(lowValue.toString()) : 0);
 		        taskEstimates.setRealistic(realisticValue != null ? Integer.parseInt(realisticValue.toString()) : 0);
 		        taskEstimates.setId( id != null ? Integer.parseInt(id.toString()) : 0);
 		        taskEstimates.setHigh(highValue != null ? Integer.parseInt(highValue.toString()) : 0);
 		        taskEstimates.setTaskId(taskIdValue != null ? taskIdValue.toString() : "");
-
 		        // Save TaskEstimates to the database using Spring Data JPA repository (assumes you have a repository)
 		        estimatesService.saveEstimates(taskEstimates);
 

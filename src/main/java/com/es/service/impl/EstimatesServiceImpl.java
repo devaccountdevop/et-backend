@@ -3,8 +3,11 @@ package com.es.service.impl;
 import java.util.List;
 import java.util.Optional;
 
+import javax.transaction.InvalidTransactionException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.es.entity.TaskEstimates;
 import com.es.repository.EstimatesRepository;
@@ -25,15 +28,23 @@ public class EstimatesServiceImpl implements EstimatesService {
 
 	@Override
 	public TaskEstimates getEstimatesByTaskId(String taskId) {
-		TaskEstimates estimates = new TaskEstimates();
-		estimates = estimatesRepository.findByTaskId(taskId);
-		return estimates;
+		return estimatesRepository.findByTaskId(taskId);
 	}
+	
+	@Transactional(rollbackFor = Exception.class)
+	@Override
+	public TaskEstimates saveTaskEstimates(TaskEstimates taskEstimate) throws InvalidTransactionException {
+		if(null == taskEstimate) {
+			throw new InvalidTransactionException("Task Estimates cannot be null");
+		}
+		return estimatesRepository.save(taskEstimate);
+	}
+	
 	@Override
 	public TaskEstimates saveEstimates(TaskEstimates taskEstimates) {
 	    if (taskEstimates != null) {
-	        int id = taskEstimates.getId();
-	        if (id != 0) {
+	        Integer id = taskEstimates.getId();
+	        if (null != id) {
 	            Optional<TaskEstimates> existingEstimatesOptional = estimatesRepository.findById(id);
 
 	            if (existingEstimatesOptional.isPresent()) {

@@ -45,7 +45,7 @@ public class JIRARestService {
 	@Value("${jira.get.project.endpoint}")
 	private String jira_get_project;
 
-	@Value("${Ai.url}")
+	@Value("${ai.url}")
 	private String apiUrl;
 
 	@Value("${jira.update.property}")
@@ -208,15 +208,18 @@ public class JIRARestService {
 
 				JsonObject fields = issueObject.getAsJsonObject("fields");
 				String issueName = fields.get("summary").getAsString();
+				String issuePriority = fields.getAsJsonObject("priority").get("name").getAsString();
+				JsonElement customFieldElement1 = fields.get("customfield_10033");
+				JsonElement customFieldElement2 = fields.get("aggregatetimeoriginalestimate");
 				JsonElement descriptionElement = fields.get("description");
 				String issueDescription = (descriptionElement != null && !descriptionElement.isJsonNull())
 						? descriptionElement.getAsString()
 						: null;
 				JsonElement customFieldElement = fields.get("customfield_10036");
-				int aiEstimate = (customFieldElement != null && !customFieldElement.isJsonNull())
-						? Integer.parseInt(customFieldElement.getAsString())
-						: 0;
-
+				
+				String aiEstimate = (customFieldElement != null && !customFieldElement.isJsonNull())
+				        ? customFieldElement.getAsString()
+				        : "0";
 				JsonArray labelArray = fields.getAsJsonArray("labels");
 				List<String> labelsList = new ArrayList<>();
 
@@ -274,7 +277,7 @@ public class JIRARestService {
 		return aiEstimatesDto;
 	}
 
-	public void updateToJIRA(String taskId, int newAiestimates) {
+	public void updateToJIRA(String taskId, String newAiestimates) {
 
 		RestTemplate restTemplate = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
@@ -284,8 +287,8 @@ public class JIRARestService {
 
 		String jiraUpdateEndpoint = jira_update_task + taskId;
 		JsonObject aiestimatesObject = new JsonObject();
-		String newAiestimatesAsString = String.valueOf(newAiestimates);
-		aiestimatesObject.addProperty("customfield_10036", newAiestimatesAsString);
+		//String newAiestimatesAsString = String.valueOf(newAiestimates);
+		aiestimatesObject.addProperty("customfield_10036", newAiestimates);
 		JsonObject fieldsObject = new JsonObject();
 		fieldsObject.add("fields", aiestimatesObject);
 		HttpEntity<String> entity = new HttpEntity<>(fieldsObject.toString(), headers);
