@@ -14,9 +14,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.es.dto.AiResponseDto;
 import com.es.dto.AiTaskEstimateRequestDto;
+import com.es.entity.ImportTask;
 import com.es.response.AiEstimatesResponse;
 import com.es.service.AiEstimatesService;
+import com.es.service.ImportTaskService;
 import com.es.validators.AiEstimateValidator;
 
 @RestController
@@ -25,13 +28,17 @@ public class AiEstimatesController {
 
 	@Autowired
 	AiEstimatesService aiEstimatesService;
+	
+	@Autowired 
+	ImportTaskService importTaskService;
 
 	@PostMapping("/aiestimates")
-	public ResponseEntity<AiEstimatesResponse> aiEstimates(@RequestBody Map<String, Object> requestBody)  {
+	public AiEstimatesResponse aiEstimates(@RequestBody Map<String, Object> requestBody)  {
 		AiEstimatesResponse response = new AiEstimatesResponse();
 		try {
 	        // Extract "updateTask" object from the request body
 	        Map<String, Object> updateTaskObj = (Map<String, Object>) requestBody.get("value");
+	        int dbTaskId = (int) updateTaskObj.get("id");
 	        AiTaskEstimateRequestDto estimateRequestDto = new AiTaskEstimateRequestDto();
 	        estimateRequestDto = aiEstimatesService.dataForAiEstimates(updateTaskObj);
 	        // Validate the updateTask object
@@ -46,12 +53,26 @@ public class AiEstimatesController {
 //	        }
 //	       
 	        // TODO: Call AI API
-	        AiEstimatesResponse aiResponse = aiEstimatesService.getAiEstimates(estimateRequestDto);
+	        AiResponseDto aiResponse = aiEstimatesService.getAiEstimates(estimateRequestDto);
 
+	        
+	       ImportTask importTask = importTaskService.getTasks(dbTaskId);
+	       if(importTask == null) {
+	    	   response.setCode(404);
+	    	   response.setMessage("error in Saving task Estimates");
+	    	   return response;
+	       }
+	       
+	        aiEstimatesService.saveAiResponse(importTask, aiResponse);
+	        
+	        response.setCode(200);
+	        response.setData(aiResponse);
+	        response.setMessage("success");
+	        
 	        // TODO: SAVE request In DB
 	       aiEstimatesService.saveCustomFields(updateTaskObj);
 
-	        return new ResponseEntity<>(aiResponse, HttpStatus.OK);
+	        return response;
 
 	    } catch (Exception e) {
 	        // Handle exceptions
@@ -59,14 +80,16 @@ public class AiEstimatesController {
 	        response.setError(true);
 	        response.setMessage("Internal Server Error");
 	        response.setTimestamp(LocalDateTime.now());
-	        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+	        return response;
 	    }
 	}
 
 	@PostMapping("/mockApi")
 	public ResponseEntity<Map> mockAiAPI(@RequestBody AiTaskEstimateRequestDto request) {
 		Map<String, Object> data = new HashMap<String, Object>();
-		data.put("aiEstimate", 1.55);
+		data.put("aifakeEstimate", 1.55);
+		data.put("threePointEstimate", 4.3);
+		data.put("riskFactor", .45);
 		Map<String, Object> response = new HashMap<String, Object>();
 		response.put("data", data);
 		response.put("code", 200);

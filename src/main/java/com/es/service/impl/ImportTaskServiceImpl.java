@@ -114,13 +114,13 @@ public class ImportTaskServiceImpl implements ImportTaskService {
    
 	    if (rowData.size() > 14) {
 	        String labelsString = rowData.get(14);
-	        if (labelsString != null && !labelsString.isBlank()) {
+	        if (labelsString != null && !labelsString.isEmpty()) {
 	            // Assuming labels are comma-separated in the Excel cell
 	            value10.addAll(Arrays.asList(labelsString.split(",")));
 	        }
 	    }
 
-	    if (rowData.get(6) != null && !rowData.get(6).isBlank()) {
+	    if (rowData.get(6) != null && !rowData.get(6).isEmpty()) {
 	        try {
 	            value3 = Integer.parseInt(rowData.get(6));
 	        } catch (NumberFormatException e) {
@@ -143,7 +143,7 @@ public class ImportTaskServiceImpl implements ImportTaskService {
 	    List<ImportTask> uniqueSprints = removeDuplicateProjects(importTasks);
 	    // Extract task IDs from the list
 	    Set<String> taskIds = uniqueSprints.stream()
-	            .filter(task -> task != null && task.getTaskId() != null && !task.getTaskId().isBlank())
+	            .filter(task -> task != null && task.getTaskId() != null && !task.getTaskId().isEmpty())
 	            .map(ImportTask::getTaskId)
 	            .collect(Collectors.toSet());
 
@@ -185,9 +185,9 @@ public class ImportTaskServiceImpl implements ImportTaskService {
 	                existingTask.setTaskStatus(importTask.getTaskStatus());
 	                existingTask.setLabels(importTask.getLabels());
 	                existingTask.setTaskDescription(importTask.getTaskDescription());
-	                existingTask.setThreePointEstimate(5);
+//	                existingTask.setThreePointEstimate(5);
 	                existingTask.setAiEstimate(importTask.getAiEstimate());
-	                existingTask.setRiskFactor(6);
+//	                existingTask.setRiskFactor(6);
 	                existingTask.setOriginalEstimate(importTask.getOriginalEstimate());
 	                existingTask.setStoryPoints(importTask.getStoryPoints());
 	                tasksToSave.add(existingTask);
@@ -197,8 +197,8 @@ public class ImportTaskServiceImpl implements ImportTaskService {
 	            // Save new task data to the list
 	            
        
-	            importTask.setThreePointEstimate(5);
-	            importTask.setRiskFactor(6);
+//	            importTask.setThreePointEstimate(5);
+//	            importTask.setRiskFactor(6);
 	            tasksToSave.add(importTask);
 	        }
 	    }
@@ -215,8 +215,8 @@ public class ImportTaskServiceImpl implements ImportTaskService {
 
 	@Override
 	public ImportTask getTasks(int id) {
-		Optional<ImportTask> list = taskRepository.findById(id);
-		return !list.isPresent() ? null : list.get();
+		Optional<ImportTask> optionalTask = taskRepository.findById(id);
+	    return optionalTask.orElse(null);
 	}
 
 	@Override
@@ -274,7 +274,7 @@ public class ImportTaskServiceImpl implements ImportTaskService {
 
 	private boolean isValidProject(ImportTask tasks) {
 		return tasks != null && tasks.getSprintId() > 0 && tasks.getTaskId() != null
-				&& !tasks.getTaskId().isBlank() && tasks.getSummary() !=null && !tasks.getSummary().isBlank() ;
+				&& !tasks.getTaskId().isEmpty() && tasks.getSummary() !=null && !tasks.getSummary().isEmpty() ;
 	}
 
 	private String generateProjectKey(ImportTask tasks) {

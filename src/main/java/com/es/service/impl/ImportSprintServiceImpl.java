@@ -97,7 +97,7 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 	    int value4 = 0; // Default value if rowData.get(4) is null
 	    String value5 = rowData.get(7);
 
-	    if (rowData.get(6) != null && !rowData.get(6).isBlank()) {
+	    if (rowData.get(6) != null && !rowData.get(6).isEmpty()) {
 	        try {
 	            value3 = Integer.parseInt(rowData.get(6));
 	        } catch (NumberFormatException e) {
@@ -106,7 +106,7 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 	        }
 	    }
 
-	    if (rowData.get(4) != null && !rowData.get(4).isBlank()) {
+	    if (rowData.get(4) != null && !rowData.get(4).isEmpty()) {
 	        try {
 	            value4 = Integer.parseInt(rowData.get(4));
 	        } catch (NumberFormatException e) {
@@ -143,7 +143,7 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 	    for (ImportSprint importSprint : uniqueSprints) {
 	        int sprintId = importSprint.getSprintId();
 
-	        if (importSprint != null && importSprint.getSprintName() != null && !importSprint.getSprintName().isBlank()
+	        if (importSprint != null && importSprint.getSprintName() != null && !importSprint.getSprintName().isEmpty()
 	                && importSprint.getProjectId() > 0
 	                && importSprint.getSprintId() > 0) {
 
@@ -223,7 +223,7 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 
 	private boolean isValidProject(ImportSprint sprints) {
 		return sprints != null && sprints.getProjectId() > 0 && sprints.getSprintName() != null
-				&& !sprints.getSprintName().isBlank() && sprints.getSprintId()>0 ;
+				&& !sprints.getSprintName().isEmpty() && sprints.getSprintId()>0 ;
 	}
 
 	private String generateProjectKey(ImportSprint sprints) {

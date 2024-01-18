@@ -251,7 +251,7 @@ public class JIRARestService {
 						JsonElement customFieldElement = fields.get(customFieldInJira);
 						String aiEstimate = (customFieldElement != null && !customFieldElement.isJsonNull())
 						        ? customFieldElement.getAsString()
-						        : "0";
+				        : "0";
 
 						JsonElement storyPointsElement = fields.get(storyPointsFieldInJira);
 						String storyPoints = (storyPointsElement != null && !storyPointsElement.isJsonNull())
@@ -283,8 +283,8 @@ public class JIRARestService {
 						taskEstimates.setLow(0);
 						taskEstimates.setRealistic(0);
 						taskEstimates.setTaskId(issueId);
-						ImportTask taskInfo = new ImportTask(SprintId, issueName, issueId, issueDescription, 5,
-								aiEstimate, 0, labelsList, 3, taskEstimates, storyPoints, originalEstimate, priority);
+						ImportTask taskInfo = new ImportTask(SprintId, issueName, issueId, issueDescription,
+								aiEstimate, 0, labelsList,  taskEstimates, storyPoints, originalEstimate, priority);
 						taskInfoList.add(taskInfo);
 					}
 
