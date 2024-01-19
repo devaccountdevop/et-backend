@@ -41,6 +41,28 @@ public class ImportTask {
 	private String riskFactor;
 	private int originalEstimate;
 	private String storyPoints;
+	
+	private String assignee;
+	private String creationDate;
+	
+	
+
+	public String getAssignee() {
+		return assignee;
+	}
+
+	public void setAssignee(String assignee) {
+		this.assignee = assignee;
+	}
+
+	public String getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(String creationDate) {
+		creationDate = creationDate;
+	}
+
 
 	public ImportTask(int id, int sprintId, String summary, String taskId, String taskType, String taskPriority,
 			String taskStatus, String taskDescription, TaskEstimates estimates, String threePointEstimate, String aiEstimate,
@@ -267,7 +289,7 @@ public class ImportTask {
 	}
 
 	public ImportTask(int sprintId, String summary, String taskId, String taskDescription, 
-			String aiEstimate, int actual, List<String> labels, TaskEstimates estimates, String storyPoints, int originalEstimate, String priority) {
+			String aiEstimate, int actual, List<String> labels, TaskEstimates estimates, String storyPoints, int originalEstimate, String priority, String assignee, String creationDate) {
 		super();
 		this.sprintId = sprintId;
 		this.summary = summary;
@@ -282,6 +304,8 @@ public class ImportTask {
 		this.storyPoints = storyPoints;
 		this.originalEstimate = originalEstimate;
 		this.taskPriority = priority;
+		this.assignee = assignee;
+		this.creationDate = creationDate;
 	}
 
 }

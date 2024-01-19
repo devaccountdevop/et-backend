@@ -243,6 +243,20 @@ public class JIRARestService {
 						String issueId = issueObject.get("key").getAsString();
 
 						JsonObject fields = issueObject.getAsJsonObject("fields");
+
+						JsonElement assigneeElement = fields.get("assignee");
+						String assigne = null;
+						if (assigneeElement != null && !assigneeElement.isJsonNull()
+								&& assigneeElement.isJsonObject()) {
+
+							JsonObject assigneeObject = assigneeElement.getAsJsonObject();
+
+							assigne = assigneeObject.get("displayName").getAsString();
+
+						}
+
+						String createdDate = fields.get("created").getAsString();
+
 						String issueName = fields.get("summary").getAsString();
 						JsonElement descriptionElement = fields.get("description");
 						String issueDescription = (descriptionElement != null && !descriptionElement.isJsonNull())
@@ -250,8 +264,8 @@ public class JIRARestService {
 								: null;
 						JsonElement customFieldElement = fields.get(customFieldInJira);
 						String aiEstimate = (customFieldElement != null && !customFieldElement.isJsonNull())
-						        ? customFieldElement.getAsString()
-				        : "0";
+								? customFieldElement.getAsString()
+								: "0";
 
 						JsonElement storyPointsElement = fields.get(storyPointsFieldInJira);
 						String storyPoints = (storyPointsElement != null && !storyPointsElement.isJsonNull())
@@ -283,8 +297,9 @@ public class JIRARestService {
 						taskEstimates.setLow(0);
 						taskEstimates.setRealistic(0);
 						taskEstimates.setTaskId(issueId);
-						ImportTask taskInfo = new ImportTask(SprintId, issueName, issueId, issueDescription,
-								aiEstimate, 0, labelsList,  taskEstimates, storyPoints, originalEstimate, priority);
+						ImportTask taskInfo = new ImportTask(SprintId, issueName, issueId, issueDescription, aiEstimate,
+								0, labelsList, taskEstimates, storyPoints, originalEstimate, priority, assigne,
+								createdDate);
 						taskInfoList.add(taskInfo);
 					}
 

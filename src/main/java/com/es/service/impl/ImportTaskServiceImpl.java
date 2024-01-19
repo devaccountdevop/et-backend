@@ -190,6 +190,8 @@ public class ImportTaskServiceImpl implements ImportTaskService {
 //	                existingTask.setRiskFactor(6);
 	                existingTask.setOriginalEstimate(importTask.getOriginalEstimate());
 	                existingTask.setStoryPoints(importTask.getStoryPoints());
+	                existingTask.setAssignee(importTask.getAssignee());
+	                existingTask.setCreationDate(importTask.getCreationDate());
 	                tasksToSave.add(existingTask);
 	                continue;
 	            }
