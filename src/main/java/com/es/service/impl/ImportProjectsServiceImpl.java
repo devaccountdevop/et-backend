@@ -165,9 +165,9 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 		List<ImportProjects> projectsToSave = new ArrayList<>();
 
 		for (ImportProjects project : uniqueProjects) {
-			if (project != null && project.getJiraUserName() != null && !project.getJiraUserName().isBlank()
+			if (project != null && project.getJiraUserName() != null && !project.getJiraUserName().isEmpty()
 					&& project.getProjectId() > 0 && project.getProjectName() != null
-					&& !project.getProjectName().isBlank()) {
+					&& !project.getProjectName().isEmpty()) {
 
 				ImportProjects existingProject = existingProjectsMap.get(project.getProjectId());
 
@@ -245,8 +245,8 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 
 	private boolean isValidProject(ImportProjects project) {
 		return project != null && project.getProjectId() > 0 && project.getJiraUserName() != null
-				&& !project.getJiraUserName().isBlank() && project.getProjectName() != null
-				&& !project.getProjectName().isBlank();
+				&& !project.getJiraUserName().isEmpty() && project.getProjectName() != null
+				&& !project.getProjectName().isEmpty();
 	}
 
 	private String generateProjectKey(ImportProjects project) {

@@ -119,7 +119,7 @@ public class ImportClientServiceImpl implements ImportClientService {
 
 	    // Create a set of Jira tokens
 	    Set<String> userJiraTokens = clients.stream()
-	            .filter(client -> client != null && client.getToken() != null && !client.getToken().isBlank())
+	            .filter(client -> client != null && client.getToken() != null )
 	            .map(ClientCredentials::getToken)
 	            .collect(Collectors.toSet());
 
@@ -137,9 +137,9 @@ public class ImportClientServiceImpl implements ImportClientService {
 	        int userId = clientCredentials.getUserId();
 
 	        if (clientCredentials != null
-	                && clientCredentials.getToken() != null && !clientCredentials.getToken().isBlank()
+	                && clientCredentials.getToken() != null && !clientCredentials.getToken().isEmpty()
 	                && clientCredentials.getUserId() > 0 && userId > 0
-	                && clientCredentials.getClientName() != null && !clientCredentials.getClientName().isBlank()) {
+	                && clientCredentials.getClientName() != null && !clientCredentials.getClientName().isEmpty()) {
 
 	            // Check for duplicate user ID and Jira token
 	            String key = userId + "-" + token;
