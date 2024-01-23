@@ -35,6 +35,43 @@ public class SignupController {
 		return response;
 	}
 	
+//	@PostMapping("/signup")
+//	public SignupResponse saveUser(HttpServletRequest request, Model model) {
+//	    SignupResponse response = new SignupResponse();
+//
+//	    String email = request.getParameter("email");
+//	    String userName = request.getParameter("userName");
+//	    String password = request.getParameter("password");
+//
+//	    if (!email.isEmpty() && !userName.isEmpty() && !password.isEmpty()) {
+//	        Signup existingUser = signupService.findUserByEmailOrUsername(email, userName);
+//
+//	        if (existingUser == null) {
+//	            Signup saveUser = new Signup();
+//	            saveUser.setEmail(email);
+//	            saveUser.setUserName(userName);
+//	            saveUser.setPassword(password);
+//	            this.signupService.saveUser(saveUser);
+//	            SignupDto userDto = new SignupDto();
+//	            userDto.setEmailId(email);
+//	            userDto.setPassword(password);
+//	            userDto.setUserName(userName);
+//	            response.setData(userDto);
+//	            response.setCode(SuccessEnum.SUCCESS_REGISTER.getCode());
+//	            response.setMessage(SuccessEnum.SUCCESS_REGISTER.getMessage());
+//	            return response;
+//	        } else {
+//	            response.setCode(ExceptionEnum.INVALID_USER.getErrorCode()); // Set 404 status code
+//	            response.setMessage(ExceptionEnum.INVALID_USER.getMessage());
+//	            return response;
+//	        }
+//	    } else {
+//	        response.setCode(ExceptionEnum.INVALID_USER.getErrorCode());
+//	        response.setMessage(ExceptionEnum.INVALID_USER.getMessage());
+//	        return response;
+//	    }
+//	}
+	
 	@PostMapping("/signup")
 	public SignupResponse saveUser(HttpServletRequest request, Model model) {
 	    SignupResponse response = new SignupResponse();
@@ -44,25 +81,38 @@ public class SignupController {
 	    String password = request.getParameter("password");
 
 	    if (!email.isEmpty() && !userName.isEmpty() && !password.isEmpty()) {
-	        Signup existingUser = signupService.findUserByEmailOrUsername(email, userName);
+	        Signup existingUser = signupService.getUserByUserName(userName);
 
 	        if (existingUser == null) {
-	            Signup saveUser = new Signup();
-	            saveUser.setEmail(email);
-	            saveUser.setUserName(userName);
-	            saveUser.setPassword(password);
-	            this.signupService.saveUser(saveUser);
-	            SignupDto userDto = new SignupDto();
-	            userDto.setEmailId(email);
-	            userDto.setPassword(password);
-	            userDto.setUserName(userName);
-	            response.setData(userDto);
-	            response.setCode(SuccessEnum.SUCCESS_REGISTER.getCode());
-	            response.setMessage(SuccessEnum.SUCCESS_REGISTER.getMessage());
-	            return response;
+	            // Username is not already taken, proceed to check for email
+	            existingUser = signupService.getUserByEmail(email);
+
+	            if (existingUser == null) {
+	                // Email is also not taken, proceed with signup
+	                Signup saveUser = new Signup();
+	                saveUser.setEmail(email);
+	                saveUser.setUserName(userName);
+	                saveUser.setPassword(password);
+	                this.signupService.saveUser(saveUser);
+
+	                SignupDto userDto = new SignupDto();
+	                userDto.setEmailId(email);
+	                userDto.setPassword(password);
+	                userDto.setUserName(userName);
+	                response.setData(userDto);
+	                response.setCode(SuccessEnum.SUCCESS_REGISTER.getCode());
+	                response.setMessage(SuccessEnum.SUCCESS_REGISTER.getMessage());
+	                return response;
+	            } else {
+	                // Email is already taken
+	                response.setCode(ExceptionEnum.EMAIL_EXISTS.getErrorCode());
+	                response.setMessage(ExceptionEnum.EMAIL_EXISTS.getMessage());
+	                return response;
+	            }
 	        } else {
-	            response.setCode(ExceptionEnum.INVALID_USER.getErrorCode()); // Set 404 status code
-	            response.setMessage(ExceptionEnum.INVALID_USER.getMessage());
+	            // Username is already taken
+	            response.setCode(ExceptionEnum.USERNAME_EXISTS.getErrorCode());
+	            response.setMessage(ExceptionEnum.USERNAME_EXISTS.getMessage());
 	            return response;
 	        }
 	    } else {
@@ -71,6 +121,7 @@ public class SignupController {
 	        return response;
 	    }
 	}
+
 
 	  
 }
