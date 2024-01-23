@@ -22,70 +22,65 @@ import com.es.service.DownloadTemplateService;
 public class DownloadTemplateServiceImpl implements DownloadTemplateService {
 
 	Workbook workbook;
+
 	@Override
 	public DownloadTemplateResponse getExcelFile(InputStream inputStream) {
-		
+
 		DownloadTemplateResponse response = new DownloadTemplateResponse();
-	        List<List<String>> excelData = new ArrayList<>(); // List to store both header and row data
-	        DataFormatter dataFormatter = new DataFormatter();
+		List<List<String>> excelData = new ArrayList<>();
+		DataFormatter dataFormatter = new DataFormatter();
 
-	        try {
-	            workbook = WorkbookFactory.create(inputStream);
-	        } catch (EncryptedDocumentException | IOException e) {
-	            e.printStackTrace();
-	        }
+		try {
+			workbook = WorkbookFactory.create(inputStream);
+		} catch (EncryptedDocumentException | IOException e) {
+			e.printStackTrace();
+		}
 
-	        Sheet sheet = workbook.getSheetAt(0);
+		Sheet sheet = workbook.getSheetAt(0);
 
-	        List<String> headerRowData = getHeaderRowData(sheet); // Retrieve header row data
-	        excelData.add(headerRowData); // Add header data to the list
+		List<String> headerRowData = getHeaderRowData(sheet);
+		excelData.add(headerRowData);
 
-	        Iterator<Row> iterator = sheet.iterator();
-	        if (iterator.hasNext()) {
-	            iterator.next(); // Skip the first row
-	        }
+		Iterator<Row> iterator = sheet.iterator();
+		if (iterator.hasNext()) {
+			iterator.next();
+		}
 
-	        while (iterator.hasNext()) {
-	            Row row = iterator.next();
-	            List<String> rowData = new ArrayList<>();
+		while (iterator.hasNext()) {
+			Row row = iterator.next();
+			List<String> rowData = new ArrayList<>();
 
-	            // Iterate through all cells in the row
-	            for (int columnIndex = 0; columnIndex < headerRowData.size(); columnIndex++) {
-	                Cell cell = row.getCell(columnIndex);
-	                String cellValue = (cell != null) ? dataFormatter.formatCellValue(cell) : null;
-	                rowData.add(cellValue);
-	            }
+			for (int columnIndex = 0; columnIndex < headerRowData.size(); columnIndex++) {
+				Cell cell = row.getCell(columnIndex);
+				String cellValue = (cell != null) ? dataFormatter.formatCellValue(cell) : null;
+				rowData.add(cellValue);
+			}
 
-	            // Add row data to the list
-	            excelData.add(rowData);
-	        }
+			excelData.add(rowData);
+		}
 
-	        response.setData(excelData);
+		response.setData(excelData);
 
-	        try {
-	            workbook.close();
-	        } catch (IOException e) {
-	            e.printStackTrace();
-	        }
+		try {
+			workbook.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
-	        return response;
-	    }
-
-	    private List<String> getHeaderRowData(Sheet sheet) {
-	        List<String> headerRowData = new ArrayList<>();
-	        Row headerRow = sheet.getRow(0);
-
-	        if (headerRow != null) {
-	            for (Cell cell : headerRow) {
-	                headerRowData.add(cell.getStringCellValue());
-	            }
-	        }
-
-	        return headerRowData;
-	    }
-	
-		
+		return response;
 	}
-	
 
+	private List<String> getHeaderRowData(Sheet sheet) {
+		List<String> headerRowData = new ArrayList<>();
+		Row headerRow = sheet.getRow(0);
 
+		if (headerRow != null) {
+			for (Cell cell : headerRow) {
+				headerRowData.add(cell.getStringCellValue());
+			}
+		}
+
+		return headerRowData;
+	}
+
+}

@@ -1,6 +1,6 @@
 package com.es.controller;
-import java.io.ByteArrayInputStream;
 
+import java.io.ByteArrayInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,27 +34,24 @@ import org.springframework.util.StreamUtils;
 @RequestMapping("/estimation-tool")
 
 public class DownloadTemplateController {
-	
+
 	@Autowired
 	TemplateRepository repository;
 	@Autowired
 	TemplateService templateService;
-	  
-	    @Autowired 
-		DownloadTemplateService downloadTemplate;
-		
-		
-		
-		@GetMapping("/downloadtemplate")
-		public DownloadTemplateResponse downloadExcelTemplate() throws IOException {
-	        
-	        InputStream inputStream = new ClassPathResource("templates/template.xlsx").getInputStream();
 
-	       
-	        HttpHeaders headers = new HttpHeaders();
-	        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=template.xlsx");
+	@Autowired
+	DownloadTemplateService downloadTemplate;
 
-	       return  downloadTemplate.getExcelFile(inputStream);
-           
-}
+	@GetMapping("/downloadtemplate")
+	public DownloadTemplateResponse downloadExcelTemplate() throws IOException {
+
+		InputStream inputStream = new ClassPathResource("templates/template.xlsx").getInputStream();
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=template.xlsx");
+
+		return downloadTemplate.getExcelFile(inputStream);
+
+	}
 }
