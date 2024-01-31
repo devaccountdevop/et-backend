@@ -9,53 +9,53 @@ import com.es.repository.SignupRepository;
 @Service
 public class ResetPasswordService {
 
-    private final SignupRepository signupRepository;
+	private final SignupRepository signupRepository;
 
-    @Autowired
-    public ResetPasswordService(SignupRepository signupRepository) {
-        this.signupRepository = signupRepository;
-    }
+	@Autowired
+	public ResetPasswordService(SignupRepository signupRepository) {
+		this.signupRepository = signupRepository;
+	}
 
-    public Signup resetPassword(String username, String oldPassword, String newPassword) {
-        // Find the user by username
-        Signup signup = signupRepository.findByUserName(username);
+	public Signup resetPassword(String username, String oldPassword, String newPassword) {
 
-        // Check if the user exists
-        if (signup != null) {
-            // Check if the old password matches the stored password
-            if (signup.getPassword().equals(oldPassword)) {
-                // Update the password with the new password
-                signup.setPassword(newPassword);
-                // Save the updated user to the repository
-                signupRepository.save(signup);
-                return signup;
-            } else {
-                // Return null or throw an exception to indicate incorrect old password
-                return null;
-            }
-        } else {
-            // Return null or throw an exception to indicate user not found
-            return null;
-        }
-    }
-    
-    public Signup resetPasswordByMail(String username, String newPassword) {
-        Signup signup = signupRepository.findByUserName(username);
+		Signup signup = signupRepository.findByUserName(username);
 
-        // Check if the user exists
-        if (signup != null) {
-                // Update the password with the new password
-                signup.setPassword(newPassword);
-                // Save the updated user to the repository
-                signupRepository.save(signup);
-                return signup;
-            } else {
-                // Return null or throw an exception to indicate incorrect old password
-                return null;
-            }
-       
-    }
+		if (signup != null) {
 
-	
+			if (signup.getPassword().equals(oldPassword)) {
+
+				signup.setPassword(newPassword);
+
+				signupRepository.save(signup);
+				return signup;
+			} else {
+
+				return null;
+			}
+		} else {
+
+			return null;
+		}
+	}
+
+	public Signup resetPasswordByMail(String username, String newPassword) {
+		Signup signup = signupRepository.findByUserName(username);
+
+		if (signup != null) {
+
+			signup.setPassword(newPassword);
+
+			signupRepository.save(signup);
+			return signup;
+		} else {
+
+			return null;
+		}
+
+	}
+
+	public Signup getUserByUsername(String username) {
+		return signupRepository.findByUserName(username);
+	}
 
 }
