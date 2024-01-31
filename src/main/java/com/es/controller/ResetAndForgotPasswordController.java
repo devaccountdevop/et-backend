@@ -29,10 +29,9 @@ public class ResetAndForgotPasswordController {
 
 	@Autowired
 	private ForgotPasswordService emailService;
-	
+
 	@Autowired
 	SignupService signupService;
-
 
 	@PostMapping("/forgotpassword")
 	public EmailResponse sendEmail(HttpServletRequest request, Model model) throws MessagingException {
@@ -40,18 +39,17 @@ public class ResetAndForgotPasswordController {
 		EmailResponse response = new EmailResponse();
 
 		String email = request.getParameter("email");
-		//String username = request.getParameter("username");
+		// String username = request.getParameter("username");
 		Signup userDetails = signupService.getUserByEmail(email);
-		
-		if(userDetails != null) {
+
+		if (userDetails != null) {
 			String message = emailService.sendEmail(userDetails);
 			if (message != null) {
 				response.setCode(SuccessEnum.SUCCESS_TYPE.getCode());
 				response.setMessage(SuccessEnum.SUCCESS_TYPE.getMessage());
 				response.setData(message);
 				return response;
-			}
-			else {
+			} else {
 				response.setCode(ExceptionEnum.INVALID_USER.getErrorCode());
 				response.setMessage(ExceptionEnum.INVALID_USER.getMessage());
 				return response;
@@ -83,6 +81,7 @@ public class ResetAndForgotPasswordController {
 			return response;
 		}
 	}
+
 	@PostMapping("/resetpassword")
 	public ResetPasswordResponse resetPassword(HttpServletRequest request, Model model) {
 
@@ -92,17 +91,48 @@ public class ResetAndForgotPasswordController {
 		String userName = request.getParameter("userName");
 		String oldPassword = request.getParameter("oldPassword");
 		Signup signup = new Signup();
-		signup = resetPasswordService.resetPassword(userName, oldPassword, newPassword);
-		if (signup != null) {
-			response.setCode(SuccessEnum.SUCCESS_TYPE.getCode());
-			response.setMessage(SuccessEnum.SUCCESS_TYPE.getMessage());
-			response.setData(signup);
-			return response;
+		Signup usernameFromDB = resetPasswordService.getUserByUsername(userName);
+
+		if (usernameFromDB != null) {
+
+			Signup updatedUser = resetPasswordService.resetPassword(userName, oldPassword, newPassword);
+
+			if (updatedUser != null) {
+				response.setCode(SuccessEnum.SUCCESS_TYPE.getCode());
+				response.setMessage(SuccessEnum.SUCCESS_TYPE.getMessage());
+				response.setData(updatedUser);
+			} else {
+
+				response.setCode(ExceptionEnum.INVALID_AUTH_USER.getErrorCode());
+				response.setMessage(ExceptionEnum.INVALID_AUTH_USER.getMessage());
+			}
 		} else {
+
 			response.setCode(ExceptionEnum.INVALID_USER.getErrorCode());
 			response.setMessage(ExceptionEnum.INVALID_USER.getMessage());
-			return response;
 		}
+
+		return response;
 	}
-	
+
+	@GetMapping("/checkusername/{username}")
+	public ResetPasswordResponse findUser(@PathVariable String username) {
+
+		ResetPasswordResponse response = new ResetPasswordResponse();
+		//String userName = request.getParameter("userName");
+		Signup usernameFromDB = resetPasswordService.getUserByUsername(username);
+		if (usernameFromDB != null) {
+			response.setCode(SuccessEnum.SUCCESS_TYPE.getCode());
+			response.setMessage(SuccessEnum.SUCCESS_TYPE.getMessage());
+			response.setData(usernameFromDB);
+			return response;
+		} else {
+
+			response.setCode(ExceptionEnum.USER_NOT_EXIST.getErrorCode());
+			response.setMessage(ExceptionEnum.USER_NOT_EXIST.getMessage());
+			return response;
+
+		}
+
+	}
 }
