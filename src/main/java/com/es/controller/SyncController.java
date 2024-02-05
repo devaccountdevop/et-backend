@@ -49,30 +49,30 @@ public class SyncController {
 	@GetMapping("/sync/{userId}/{clientId}")
 	public SyncResponse syncAllDataWithJira(@PathVariable String userId, @PathVariable String clientId) {
 		SyncResponse response = new SyncResponse();
-
+ 
 		try {
 			Signup signup = signupService.getUserById(Integer.parseInt(userId));
-
+ 
 			if (signup == null) {
 				response.setCode(ExceptionEnum.INVALID_USER.getErrorCode());
 				response.setMessage(ExceptionEnum.INVALID_USER.getMessage());
 				return response;
 			}
-
+ 
 			GetProjectResponse projectResponse = jiraRestService.getAllProjects(Integer.parseInt(clientId));
 			List<ImportProjects> projectInfoList = (List<ImportProjects>) projectResponse.getData();
-
+ 
 			if (!projectInfoList.isEmpty()) {
 				List<ImportSprint> allSprints = new ArrayList<>();
 				List<ImportTask> allTasks = new ArrayList<>();
-
+ 
 				for (ImportProjects project : projectInfoList) {
 					List<ImportSprint> sprintInfoList = jiraRestService.getAllSprintsByProjectId(project.getProjectId(),
 							Integer.parseInt(clientId));
-
+ 
 					if (!sprintInfoList.isEmpty()) {
 						allSprints.addAll(sprintInfoList);
-
+ 
 						List<ImportTask> taskList = new ArrayList<>();
 						for (ImportSprint sprint : sprintInfoList) {
 							taskList.addAll(jiraRestService.getAllTasksBySprintId(sprint.getSprintId(),
@@ -81,20 +81,15 @@ public class SyncController {
 						allTasks.addAll(taskList);
 					}
 				}
-
+ 
 				if (!allSprints.isEmpty() && !allTasks.isEmpty()) {
 					// Save all data to your database or perform any other necessary actions
-					importProjectsService.saveProjectData(projectInfoList);
+				  List<ImportProjects > updatedProject =	importProjectsService.saveProjectData(projectInfoList);
 					importSprintService.saveSprintData(allSprints);
 					importTaskService.saveTaskData(allTasks);
-
-					List<Object> object = new ArrayList<>();
-					object.addAll(projectInfoList);
-					object.addAll(allSprints);
-					object.addAll(allTasks);
-
+ 
 					response.setCode(HttpStatus.OK.value());
-					response.setData(object);
+					response.setData(updatedProject);
 					return response;
 				}
 			} else {
@@ -124,7 +119,7 @@ public class SyncController {
 			response.setMessage("Internal Server Error: Something went wrong.");
 			return response;
 		}
-
+ 
 		// Handle the case where no data is found or processed
 		response.setCode(HttpStatus.NOT_FOUND.value());
 		response.setMessage("No data found or processed.");

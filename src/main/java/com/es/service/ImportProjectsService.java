@@ -11,7 +11,7 @@ public interface ImportProjectsService {
 	
 	List<ImportProjects> getProjectDataAsList(InputStream inputStream);
 	
-	int saveProjectData(List<ImportProjects> projects);
+	List<ImportProjects> saveProjectData(List<ImportProjects> projects);
     
 	ImportProjects getProjects(int id);
 	ImportProjects saveProjects(ImportProjects importProjects);
@@ -21,4 +21,7 @@ public interface ImportProjectsService {
 	List<ImportProjects> getProjectsByJiraUserName(String jiraUserName);
 //	public ClientCredentials updateClientCredentialsByUserId(ClientCredentials clientCredentials);
 	List<ImportProjects> saveProjectList(List<ImportProjects> importProjects);
+
+	List<String> modifiedProjectsName(List<String> projectList);
+		
 }

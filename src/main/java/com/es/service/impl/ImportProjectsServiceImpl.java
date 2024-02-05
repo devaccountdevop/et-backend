@@ -127,30 +127,28 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 	private ImportProjects createProjectList(List<String> rowData) {
 		String value3 = rowData.get(3);
 
-		// Check for null before using as int
 		Integer value4 = null;
 		if (rowData.get(4) != null && !rowData.get(4).isEmpty()) {
 			try {
 				value4 = Integer.parseInt(rowData.get(4));
 			} catch (NumberFormatException e) {
-				// Handle the exception if the value cannot be parsed as an integer
-				e.printStackTrace(); // Log the exception or handle it based on your requirements
+
+				e.printStackTrace();
 			}
 		}
 
 		String value5 = rowData.get(5);
 
-		// Use value4 as int only if it is not null
 		int intValue4 = (value4 != null) ? value4.intValue() : 0;
 
 		return new ImportProjects(intValue4, value5, value3);
 	}
 
 	@Override
-	public int saveProjectData(List<ImportProjects> projects) {
+	public List<ImportProjects> saveProjectData(List<ImportProjects> projects) {
 		if (projects == null || projects.isEmpty()) {
-			// No projects to save, return 0
-			return 0;
+
+			return projects;
 		}
 
 		List<ImportProjects> uniqueProjects = removeDuplicateProjects(projects);
@@ -163,7 +161,7 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 				.stream().collect(Collectors.toMap(ImportProjects::getProjectId, Function.identity()));
 
 		List<ImportProjects> projectsToSave = new ArrayList<>();
-
+		List<ImportProjects> updatedProject = new ArrayList<>();
 		for (ImportProjects project : uniqueProjects) {
 			if (project != null && project.getJiraUserName() != null && !project.getJiraUserName().isEmpty()
 					&& project.getProjectId() > 0 && project.getProjectName() != null
@@ -172,23 +170,35 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 				ImportProjects existingProject = existingProjectsMap.get(project.getProjectId());
 
 				if (existingProject != null) {
-					// Update existing project data
+					if (!existingProject.getProjectName().equals(project.getProjectName())) {
+						ImportProjects updatedInstance = new ImportProjects();
+						updatedInstance.setJiraUserName(existingProject.getJiraUserName());
+						updatedInstance.setProjectName(existingProject.getProjectName());
+
+						updatedProject.add(updatedInstance);
+					}
 					existingProject.setJiraUserName(project.getJiraUserName());
 					existingProject.setProjectName(project.getProjectName());
 					projectsToSave.add(existingProject);
 				} else {
-					// Save new project data to the list
+
 					projectsToSave.add(project);
 				}
 			}
 		}
 
 		if (!projectsToSave.isEmpty()) {
-			// Save all projects in one request
+
 			importProjectsRepository.saveAll(projectsToSave);
 		}
 
-		return projectsToSave.size();
+		return updatedProject;
+	}
+
+	public List<String> modifiedProjectsName(List<String> projectList) {
+
+		return projectList;
+
 	}
 
 	@Override
