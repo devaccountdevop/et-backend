@@ -172,6 +172,7 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 				if (existingProject != null) {
 					if (!existingProject.getProjectName().equals(project.getProjectName())) {
 						ImportProjects updatedInstance = new ImportProjects();
+						updatedInstance.setProjectId(existingProject.getProjectId());
 						updatedInstance.setJiraUserName(existingProject.getJiraUserName());
 						updatedInstance.setProjectName(existingProject.getProjectName());
 
