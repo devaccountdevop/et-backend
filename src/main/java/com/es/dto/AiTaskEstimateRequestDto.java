@@ -1,110 +1,75 @@
 package com.es.dto;
-
+ 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+ 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AiTaskEstimateRequestDto {
-
+ 
 	@JsonProperty("summary")
-	private String taskName;
-	private String taskDescription;
-	private String taskLabel;
-	private String originalEstimates;
-	private Integer sprintNumber;
-	private String taskPriority;
-	private String storyPoints;
-	private int optimistic;
-	private int mostLikely;
-	private int pessimistic;
-	private String taskId;
-
-	public String getTaskName() {
-		return taskName;
+	private String task_name;
+	private String task_description;
+	private String task_label;
+	private String planned_estimate;
+	private String sprint_number;
+	private String priority;
+	private String Optimistic_estimate;
+	private String Most_likely_estimate;
+	private String Pessimistic_estimate;
+	public String getTask_name() {
+		return task_name;
 	}
-
-	public void setTaskName(String taskName) {
-		this.taskName = taskName;
+	public void setTask_name(String task_name) {
+		this.task_name = task_name;
 	}
-
-	public String getTaskDescription() {
-		return taskDescription;
+	public String getTask_descrption() {
+		return task_description;
 	}
-
-	public void setTaskDescription(String taskDescription) {
-		this.taskDescription = taskDescription;
+	public void setTask_descrption(String task_descrption) {
+		this.task_description = task_descrption;
 	}
-
-	public String getTaskLabel() {
-		return taskLabel;
+	public String getTask_label() {
+		return task_label;
 	}
-
-	public void setTaskLabel(String taskLabel) {
-		this.taskLabel = taskLabel;
+	public void setTask_label(String task_label) {
+		this.task_label = task_label;
 	}
-
-	public String getOriginalEstimates() {
-		return originalEstimates;
+	public String getPlanned_estimate() {
+		return planned_estimate;
 	}
-
-	public void setOriginalEstimates(String originalEstimates) {
-		this.originalEstimates = originalEstimates;
+	public void setPlanned_estimate(String planned_estimate) {
+		this.planned_estimate = planned_estimate;
 	}
-
-	public Integer getSprintNumber() {
-		return sprintNumber;
+	public String getSprint_number() {
+		return sprint_number;
 	}
-
-	public void setSprintNumber(Integer sprintNumber) {
-		this.sprintNumber = sprintNumber;
+	public void setSprint_number(String sprint_number) {
+		this.sprint_number = sprint_number;
 	}
-
-	public String getTaskPriority() {
-		return taskPriority;
+	public String getPriority() {
+		return priority;
 	}
-
-	public void setTaskPriority(String taskPriority) {
-		this.taskPriority = taskPriority;
+	public void setPriority(String priority) {
+		this.priority = priority;
 	}
-
-	public String getStoryPoints() {
-		return storyPoints;
+	public String getOptimistic_estimate() {
+		return Optimistic_estimate;
 	}
-
-	public void setStoryPoints(String storyPoints) {
-		this.storyPoints = storyPoints;
+	public void setOptimistic_estimate(String optimistic_estimate) {
+		Optimistic_estimate = optimistic_estimate;
 	}
-
-	public Integer getOptimistic() {
-		return optimistic;
+	public String getMost_likely_estimate() {
+		return Most_likely_estimate;
 	}
-
-	public void setOptimistic(Integer optimistic) {
-		this.optimistic = optimistic;
+	public void setMost_likely_estimate(String most_likely_estimate) {
+		Most_likely_estimate = most_likely_estimate;
 	}
-
-	public Integer getMostLikely() {
-		return mostLikely;
+	public String getPessimistic_estimate() {
+		return Pessimistic_estimate;
 	}
-
-	public void setMostLikely(Integer mostLikely) {
-		this.mostLikely = mostLikely;
+	public void setPessimistic_estimate(String pessimistic_estimate) {
+		Pessimistic_estimate = pessimistic_estimate;
 	}
-
-	public Integer getPessimistic() {
-		return pessimistic;
-	}
-
-	public void setPessimistic(Integer pessimistic) {
-		this.pessimistic = pessimistic;
-	}
-
-	public String getTaskId() {
-		return taskId;
-	}
-
-	public void setTaskId(String taskId) {
-		this.taskId = taskId;
-	}
+ 
 	
 }
