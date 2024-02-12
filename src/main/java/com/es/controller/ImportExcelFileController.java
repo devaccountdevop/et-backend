@@ -95,7 +95,7 @@ public class ImportExcelFileController {
 				return response;
 			}
 
-			List<ImportProjects> noOfProjectRecords = importProjectsService.saveProjectData(projectList);
+			List<ImportProjects> noOfProjectUpdated = importProjectsService.saveProjectData(projectList);
 			int noOfSprintRecords = importSprintService.saveSprintData(sprintList);
 // 
 //	        if (noOfProjectRecords == 0) {
@@ -104,6 +104,7 @@ public class ImportExcelFileController {
 //                return response;
 //            }
 // 
+			response.setData(noOfProjectUpdated);
 			response.setCode(SuccessEnum.SUCCESS_TYPE.getCode());
 			response.setMessage("File uploaded successfully.");
 
