@@ -29,34 +29,29 @@ import java.util.List;
 @RestController
 @RequestMapping("/estimation-tool/")
 public class SprintController {
-	
-	    @Autowired
-	    JIRARestService jIRARestService;
-	
-	    @Autowired
-	    ImportSprintService importSprintService;
 
-	    @GetMapping("getAllSprints/{projectId}")
-	    public GetSprintResponse getAllSprints(@PathVariable String projectId) { 
-	        GetSprintResponse response = new GetSprintResponse();
-	        
-	        
-	        List<ImportSprint> list = importSprintService.getAllSprintByProjectId(Integer.parseInt(projectId));
+	@Autowired
+	JIRARestService jIRARestService;
 
-	        if (!list.isEmpty()) {
-	            response.setCode(200); // Use HttpStatus constants
-	            response.setMessage("success");
-	            response.setData(list);
-	        } else {
-	            response.setCode(404); // Use HttpStatus constants
-	            response.setMessage("invalid");
-	        }
+	@Autowired
+	ImportSprintService importSprintService;
 
-	        return response;
-	    }
+	@GetMapping("getAllSprints/{projectId}")
+	public GetSprintResponse getAllSprints(@PathVariable String projectId) {
+		GetSprintResponse response = new GetSprintResponse();
 
-	    
+		List<SprintInfoDto> list = importSprintService.getAllSprintByProjectId(Integer.parseInt(projectId));
 
+		if (!list.isEmpty()) {
+			response.setCode(200);
+			response.setMessage("success");
+			response.setData(list);
+		} else {
+			response.setCode(404);
+			response.setMessage("invalid");
+		}
 
+		return response;
+	}
 
 }
