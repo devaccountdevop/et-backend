@@ -18,6 +18,9 @@ public interface ImportTaskRepository extends JpaRepository<ImportTask, Integer>
 	List<ImportTask> findByTaskIdIn(Set<String> taskIds);
 	public List<ImportTask> findAllTaskBySprintId(int sprintId);
 	
+	@Query("SELECT t FROM ImportTask t WHERE t.sprintId IN :sprintIds")
+    List<ImportTask> findAllBySprintIds(List<Integer> sprintIds);
+	
 	@Query("SELECT t FROM ImportTask t WHERE t.taskId IN :taskIds AND t.sprintId IN :sprintIds")
     List<ImportTask> findByTaskIdInAndSprintIdIn(@Param("taskIds") Collection<String> taskIds, @Param("sprintIds") Collection<Integer> sprintIds);
 }

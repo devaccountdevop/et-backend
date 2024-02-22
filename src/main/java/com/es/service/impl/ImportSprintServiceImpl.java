@@ -24,10 +24,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.es.dto.SprintInfoDto;
 import com.es.entity.ClientCredentials;
 import com.es.entity.ImportProjects;
 import com.es.entity.ImportSprint;
+import com.es.entity.ImportTask;
 import com.es.repository.ImportSprintRepository;
+import com.es.repository.ImportTaskRepository;
 import com.es.service.ImportSprintService;
 
 @Service
@@ -35,6 +38,9 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 
 	@Autowired
 	ImportSprintRepository importSprintRepository;
+
+	@Autowired
+	ImportTaskRepository importTaskRepository;
 	Workbook workbook;
 
 	@Override
@@ -48,25 +54,23 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 		}
 		Sheet sheet = workbook.getSheetAt(0);
 
-		List<String> headerRowData = getHeaderRowData(sheet); // Retrieve header row data
+		List<String> headerRowData = getHeaderRowData(sheet);
 
 		Iterator<Row> iterator = sheet.iterator();
 		if (iterator.hasNext()) {
-			iterator.next(); // Skip the first row
+			iterator.next();
 		}
 
 		while (iterator.hasNext()) {
 			Row row = iterator.next();
 			List<String> rowData = new ArrayList<>();
 
-			// Iterate through all cells in the row
 			for (int columnIndex = 0; columnIndex < headerRowData.size(); columnIndex++) {
 				Cell cell = row.getCell(columnIndex);
 				String cellValue = (cell != null) ? dataFormatter.formatCellValue(cell) : null;
 				rowData.add(cellValue);
 			}
 
-			// Check if all values in the current row are blank before adding to the list
 			if (!rowData.isEmpty() && rowData.stream().anyMatch(value -> value != null)) {
 				ImportSprint credentials = createSprintList(rowData);
 				invList.add(credentials);
@@ -81,6 +85,7 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 
 		return invList;
 	}
+
 	private List<String> getHeaderRowData(Sheet sheet) {
 		List<String> headerRowData = new ArrayList<>();
 		Row headerRow = sheet.getRow(0);
@@ -92,109 +97,155 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 
 		return headerRowData;
 	}
+
 	private ImportSprint createSprintList(List<String> rowData) {
-	    int value3 = 0; // Default value if rowData.get(6) is null
-	    int value4 = 0; // Default value if rowData.get(4) is null
-	    String value5 = rowData.get(7);
+		int value3 = 0;
+		int value4 = 0;
+		String value5 = rowData.get(7);
 
-	    if (rowData.get(6) != null && !rowData.get(6).isEmpty()) {
-	        try {
-	            value3 = Integer.parseInt(rowData.get(6));
-	        } catch (NumberFormatException e) {
-	            // Handle the case where the string cannot be parsed to an integer
-	            // You can log the error or take appropriate action based on your requirements
-	        }
-	    }
+		if (rowData.get(6) != null && !rowData.get(6).isEmpty()) {
+			try {
+				value3 = Integer.parseInt(rowData.get(6));
+			} catch (NumberFormatException e) {
 
-	    if (rowData.get(4) != null && !rowData.get(4).isEmpty()) {
-	        try {
-	            value4 = Integer.parseInt(rowData.get(4));
-	        } catch (NumberFormatException e) {
-	            // Handle the case where the string cannot be parsed to an integer
-	            // You can log the error or take appropriate action based on your requirements
-	        }
-	    }
+			}
+		}
 
-	    return new ImportSprint(value4, value3, value5);
+		if (rowData.get(4) != null && !rowData.get(4).isEmpty()) {
+			try {
+				value4 = Integer.parseInt(rowData.get(4));
+			} catch (NumberFormatException e) {
+
+			}
+		}
+
+		return new ImportSprint(value4, value3, value5);
 	}
 
 	@Override
 	public int saveSprintData(List<ImportSprint> importSprints) {
-	    if (importSprints == null || importSprints.isEmpty()) {
-	        // No sprints to save, return 0
-	        return 0;
-	    }
-	    List<ImportSprint> uniqueSprints = removeDuplicateProjects(importSprints);
-	    // Extract sprint IDs from the list
-	    Set<Integer> sprintIds = uniqueSprints.stream()
-	            .filter(sprint -> sprint != null && sprint.getSprintId() > 0)
-	            .map(ImportSprint::getSprintId)
-	            .collect(Collectors.toSet());
+		if (importSprints == null || importSprints.isEmpty()) {
 
-	    // Retrieve existing sprints from the database based on sprint IDs
-	    Map<Integer, ImportSprint> existingSprintsMap = importSprintRepository
-	            .findBySprintIdIn(sprintIds)
-	            .stream()
-	            .collect(Collectors.toMap(ImportSprint::getSprintId, Function.identity()));
+			return 0;
+		}
+		List<ImportSprint> uniqueSprints = removeDuplicateProjects(importSprints);
 
-	    List<ImportSprint> sprintsToSave = new ArrayList<>();
+		Set<Integer> sprintIds = uniqueSprints.stream().filter(sprint -> sprint != null && sprint.getSprintId() > 0)
+				.map(ImportSprint::getSprintId).collect(Collectors.toSet());
 
-	    // Iterate over the import sprints
-	    for (ImportSprint importSprint : uniqueSprints) {
-	        int sprintId = importSprint.getSprintId();
+		Map<Integer, ImportSprint> existingSprintsMap = importSprintRepository.findBySprintIdIn(sprintIds).stream()
+				.collect(Collectors.toMap(ImportSprint::getSprintId, Function.identity()));
 
-	        if (importSprint != null && importSprint.getSprintName() != null && !importSprint.getSprintName().isEmpty()
-	                && importSprint.getProjectId() > 0
-	                && importSprint.getSprintId() > 0) {
+		List<ImportSprint> sprintsToSave = new ArrayList<>();
 
-	            // Find the sprint in the existing map
-	            ImportSprint existingSprint = existingSprintsMap.get(sprintId);
+		for (ImportSprint importSprint : uniqueSprints) {
+			int sprintId = importSprint.getSprintId();
 
-	            if (existingSprint != null) {
-	                // Update existing sprint data
-	                existingSprint.setProjectId(importSprint.getProjectId());
-	                existingSprint.setSprintName(importSprint.getSprintName());
-	                sprintsToSave.add(existingSprint);
-	            } else {
-	                // Save new sprint data to the list
-	                sprintsToSave.add(importSprint);
-	            }
-	        }
-	    }
+			if (importSprint != null && importSprint.getSprintName() != null && !importSprint.getSprintName().isEmpty()
+					&& importSprint.getProjectId() > 0 && importSprint.getSprintId() > 0) {
 
-	    if (!sprintsToSave.isEmpty()) {
-	        // Save all sprints in one request
-	        importSprintRepository.saveAll(sprintsToSave);
-	    }
+				ImportSprint existingSprint = existingSprintsMap.get(sprintId);
 
-	    return sprintsToSave.size();
+				if (existingSprint != null) {
+
+					existingSprint.setProjectId(importSprint.getProjectId());
+					existingSprint.setSprintName(importSprint.getSprintName());
+					sprintsToSave.add(existingSprint);
+				} else {
+
+					sprintsToSave.add(importSprint);
+				}
+			}
+		}
+
+		if (!sprintsToSave.isEmpty()) {
+
+			importSprintRepository.saveAll(sprintsToSave);
+		}
+
+		return sprintsToSave.size();
 	}
-
-
-	
 
 	@Override
 	public ImportSprint getProjects(int id) {
 		Optional<ImportSprint> list = importSprintRepository.findById(id);
-		return ! list.isPresent() ? null: list.get();
+		return !list.isPresent() ? null : list.get();
 	}
 
 	@Override
 	public ImportSprint saveProjects(ImportSprint importSprint) {
-		 
+
 		return importSprintRepository.save(importSprint);
 	}
 
 	@Override
 	public ImportSprint updateClientCredentials(ImportSprint importSprint) {
-		 
+
 		return importSprintRepository.save(importSprint);
 	}
+
 	@Override
-	public List<ImportSprint> getAllSprintByProjectId(int projectId) {
-		return importSprintRepository.findAllSprintByProjectId(projectId);
+	public List<SprintInfoDto> getAllSprintByProjectId(int projectId) {
+		List<ImportSprint> sprintList = importSprintRepository.findAllSprintByProjectId(projectId);
+		if (sprintList.isEmpty()) {
+			return new ArrayList<>();
+		}
+		List<Integer> sprintIds = new ArrayList<>();
+		for (ImportSprint sprint : sprintList) {
+			sprintIds.add(sprint.getSprintId());
+		}
+
+		List<ImportTask> taskList = importTaskRepository.findAllBySprintIds(sprintIds);
+
+		List<SprintInfoDto> sprintDTOList = new ArrayList<>();
+		for (ImportSprint sprint : sprintList) {
+			SprintInfoDto sprintDTO = new SprintInfoDto(sprint.getId(), sprint.getProjectId(), sprint.getSprintId(),
+					sprint.getSprintName(), "0", 0);
+			sprintDTO.setSprintId(sprint.getSprintId());
+			sprintDTO.setSprintName(sprint.getSprintName());
+
+			int sumOriginalEstimate = 0;
+			double sumAiEstimate = 0.0;
+			for (ImportTask task : taskList) {
+				if (task.getSprintId() == sprint.getSprintId()) {
+					sumOriginalEstimate += task.getOriginalEstimate();
+
+					String aiEstimateString = task.getAiEstimate();
+					if (aiEstimateString != null && !aiEstimateString.isEmpty()) {
+
+						if (aiEstimateString.contains(".")) {
+
+							double aiEstimateDouble = Double.parseDouble(aiEstimateString);
+							sumAiEstimate += aiEstimateDouble;
+						} else {
+
+							int aiEstimateInt = Integer.parseInt(aiEstimateString);
+							sumAiEstimate += aiEstimateInt;
+						}
+
+					} else {
+
+						sumAiEstimate += 0;
+
+					}
+				}
+			}
+
+			sumOriginalEstimate /= 3600;
+			sumOriginalEstimate /= 8;
+			sumAiEstimate /= 8;
+
+			sprintDTO.setSumOfOriginalEstimate(sumOriginalEstimate);
+
+			String sumAiEstimateString = String.valueOf(sumAiEstimate);
+			sprintDTO.setSumOfAiEstimate(sumAiEstimateString);
+
+			sprintDTOList.add(sprintDTO);
+		}
+
+		return sprintDTOList;
 	}
-	
+
 	public List<ImportSprint> removeDuplicateProjects(List<ImportSprint> sprints) {
 		if (sprints == null || sprints.isEmpty()) {
 			// No projects to check, return an empty list
@@ -223,14 +274,12 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 
 	private boolean isValidProject(ImportSprint sprints) {
 		return sprints != null && sprints.getProjectId() > 0 && sprints.getSprintName() != null
-				&& !sprints.getSprintName().isEmpty() && sprints.getSprintId()>0 ;
+				&& !sprints.getSprintName().isEmpty() && sprints.getSprintId() > 0;
 	}
 
 	private String generateProjectKey(ImportSprint sprints) {
-		
+
 		return sprints.getProjectId() + "-" + sprints.getSprintId() + "-" + sprints.getSprintName();
 	}
-	
-	
-	
+
 }
