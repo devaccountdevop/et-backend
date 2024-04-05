@@ -2,8 +2,10 @@ package com.es.service.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -24,11 +26,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.es.dto.GraphData;
+import com.es.dto.GraphDataDto;
 import com.es.dto.SprintInfoDto;
 import com.es.entity.ClientCredentials;
 import com.es.entity.ImportProjects;
 import com.es.entity.ImportSprint;
 import com.es.entity.ImportTask;
+import com.es.entity.Worklog;
 import com.es.repository.ImportSprintRepository;
 import com.es.repository.ImportTaskRepository;
 import com.es.service.ImportSprintService;
@@ -150,6 +155,9 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 
 					existingSprint.setProjectId(importSprint.getProjectId());
 					existingSprint.setSprintName(importSprint.getSprintName());
+					existingSprint.setStartDate(importSprint.getStartDate());
+					existingSprint.setEndDate(importSprint.getEndDate());
+					existingSprint.setCompleteDate(importSprint.getCompleteDate());
 					sprintsToSave.add(existingSprint);
 				} else {
 
@@ -190,9 +198,12 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 		if (sprintList.isEmpty()) {
 			return new ArrayList<>();
 		}
+		List<LocalDate> sprintDates = new ArrayList<>();
 		List<Integer> sprintIds = new ArrayList<>();
+		Map<Integer, List<String>> sprintDatesById = new HashMap<>() ;
 		for (ImportSprint sprint : sprintList) {
 			sprintIds.add(sprint.getSprintId());
+			sprintDatesById.put(sprint.getSprintId(), getDatesBetween(sprint.getStartDate(), sprint.getEndDate()));
 		}
 
 		List<ImportTask> taskList = importTaskRepository.findAllBySprintIds(sprintIds);
@@ -203,6 +214,8 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 					sprint.getSprintName(), "0", 0);
 			sprintDTO.setSprintId(sprint.getSprintId());
 			sprintDTO.setSprintName(sprint.getSprintName());
+			sprintDTO.setStartDate(sprint.getStartDate());
+			sprintDTO.setEndDate(sprint.getEndDate());
 
 			int sumOriginalEstimate = 0;
 			double sumAiEstimate = 0.0;
@@ -243,8 +256,40 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 			sprintDTOList.add(sprintDTO);
 		}
 
-		return sprintDTOList;
-	}
+		if (sprintDatesById != null) {
+		    Map<String, List<GraphDataDto>> tasksBySprintDate = new HashMap<>();
+		    for (Integer sprintId : sprintDatesById.keySet()) {
+		        List<String> sprintDates1 = sprintDatesById.get(sprintId);
+		        
+		        List<ImportTask> tasksForSprintId = taskList.stream()
+		            .filter(task -> sprintId.equals(task.getSprintId()))
+		            .collect(Collectors.toList());
+		        
+		        //List<String> sprintDates2 = getDatesBetween("2023-11-02", "2023-11-23");
+		        for (String sprintDate : sprintDates1) {
+		            List<ImportTask> filteredTasks = tasksForSprintId.stream()
+		                .filter(task -> task.getWorklogs().stream()
+		                    .anyMatch(worklog -> worklog.getUpdatedDate().equals(sprintDate)))
+		                .collect(Collectors.toList());
+		                
+		            List<GraphDataDto> taskDto = new ArrayList<>();
+		            for (ImportTask task : filteredTasks) {
+		                GraphDataDto graphDataDto = new GraphDataDto();
+		                for (Worklog worklog : task.getWorklogs()) {
+		                    graphDataDto.setActualEstimate(task.getActual());
+		                    graphDataDto.setAiEstimate(task.getAiEstimate());
+		                    graphDataDto.setRemaining(task.getOriginalEstimate() - worklog.getTimeSpentSeconds());
+		                    graphDataDto.setVelocity(task.getStoryPoints());
+		                    taskDto.add(graphDataDto);
+		                }
+		            }
+		            
+		            tasksBySprintDate.put(sprintDate, taskDto);
+		        }
+}}
+		    return sprintDTOList;    
+		}
+		    
 
 	public List<ImportSprint> removeDuplicateProjects(List<ImportSprint> sprints) {
 		if (sprints == null || sprints.isEmpty()) {
@@ -281,5 +326,20 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 
 		return sprints.getProjectId() + "-" + sprints.getSprintId() + "-" + sprints.getSprintName();
 	}
+
+	private List<String> getDatesBetween(String startDate, String endDate) {
+	    if (startDate == null || endDate == null) {
+	        return Collections.emptyList();
+	    }
+
+	    LocalDate start = LocalDate.parse(startDate.substring(0, 10));
+	    LocalDate end = LocalDate.parse(endDate.substring(0, 10));
+	    List<String> dates = new ArrayList<>();
+	    for (LocalDate date = start; !date.equals(end); date = date.plusDays(1)) {
+	        dates.add(date.toString());
+	    }
+	    return dates;
+	}
+
 
 }

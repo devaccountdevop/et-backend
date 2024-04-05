@@ -23,6 +23,7 @@ import com.es.entity.ImportProjects;
 import com.es.entity.ImportSprint;
 import com.es.entity.ImportTask;
 import com.es.entity.TaskEstimates;
+import com.es.entity.Worklog;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -165,8 +166,21 @@ public class JIRARestService {
 						JsonObject sprintObject = value.getAsJsonObject();
 						int sprintId = sprintObject.get("id").getAsInt();
 						String sprintName = sprintObject.get("name").getAsString();
+//						String startDate = sprintObject.get("startDate").getAsString();
+//                        String endDate = sprintObject.get("endDate").getAsString();
+//                        String completeDate = sprintObject.get("completeDate").getAsString();
+						String startDate = sprintObject.has("startDate") ? sprintObject.get("startDate").getAsString()
+								: null;
+						String endDate = sprintObject.has("endDate") ? sprintObject.get("endDate").getAsString() : null;
+						String completeDate = sprintObject.has("completeDate")
+								? sprintObject.get("completeDate").getAsString()
+								: null;
 
-						ImportSprint sprintInfo = new ImportSprint(projectId, sprintId, sprintName);
+						ImportSprint sprintInfo = new ImportSprint(projectId, sprintId, sprintName, startDate, endDate,
+								completeDate);
+//						sprintInfo.setStartDate(startDate);
+//                        sprintInfo.setEndDate(endDate);
+//                        sprintInfo.setCompleteDate(completeDate);
 						sprintInfoList.add(sprintInfo);
 					}
 				}
@@ -230,6 +244,7 @@ public class JIRARestService {
 							+ SprintId + "/issue";
 					ResponseEntity<String> responseEntity = restTemplate.exchange(jiraTasksEndpoint, HttpMethod.GET,
 							entity, String.class);
+
 					String jsonResponse = responseEntity.getBody();
 					JsonParser jsonParser = new JsonParser();
 					JsonObject jsonObject = jsonParser.parse(jsonResponse).getAsJsonObject();
@@ -243,6 +258,39 @@ public class JIRARestService {
 						String issueId = issueObject.get("key").getAsString();
 
 						JsonObject fields = issueObject.getAsJsonObject("fields");
+						JsonObject taskObj = fields.getAsJsonObject("issuetype");
+						String taskType = taskObj.get("name").getAsString();
+						List<Worklog> worklogs = new ArrayList<>();
+						if (taskType != "story") {
+
+							JsonObject worklogobj = fields.getAsJsonObject("worklog");
+							// JsonArray worklog = worklogobj.getAsJsonArray("worklogs");
+							JsonArray worklog = (worklogobj != null) ? worklogobj.getAsJsonArray("worklogs") : null;
+
+							if (worklogobj == null) {
+
+								Worklog worklogInfo = new Worklog(issueId, null, null, null, null, 0);
+								worklogs.add(worklogInfo);
+							} else if (worklog != null && worklog.size() > 0) {
+								for (int j = 0; j < worklog.size(); j++) {
+									JsonObject worklogObject = worklog.get(j).getAsJsonObject();
+									String startedDate = worklogObject.get("started").isJsonNull() ? null
+											: worklogObject.get("started").getAsString();
+									int timeSpentSeconds = worklogObject.get("timeSpentSeconds").isJsonNull() ? 0
+											: worklogObject.get("timeSpentSeconds").getAsInt();
+									String createdDate1 = worklogObject.get("created").isJsonNull() ? null
+											: worklogObject.get("created").getAsString();
+									String updatedDate = worklogObject.get("updated").isJsonNull() ? null
+											: worklogObject.get("updated").getAsString();
+									String timeSpent = worklogObject.get("timeSpent").isJsonNull() ? null
+											: worklogObject.get("timeSpent").getAsString();
+
+									Worklog worklogInfo = new Worklog(issueId, createdDate1, updatedDate, startedDate,
+											timeSpent, timeSpentSeconds);
+									worklogs.add(worklogInfo);
+								}
+							}
+						}
 
 						JsonElement assigneeElement = fields.get("assignee");
 						String assigne = null;
@@ -299,7 +347,7 @@ public class JIRARestService {
 						taskEstimates.setTaskId(issueId);
 						ImportTask taskInfo = new ImportTask(SprintId, issueName, issueId, issueDescription, aiEstimate,
 								0, labelsList, taskEstimates, storyPoints, originalEstimate, priority, assigne,
-								createdDate);
+								createdDate, worklogs);
 						taskInfoList.add(taskInfo);
 					}
 

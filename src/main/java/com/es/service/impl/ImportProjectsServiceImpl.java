@@ -24,9 +24,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.es.dto.ProjectInfoDto;
 import com.es.entity.ClientCredentials;
 import com.es.entity.ImportProjects;
+import com.es.entity.ImportSprint;
 import com.es.repository.ImportProjectsRepository;
+import com.es.repository.ImportSprintRepository;
 import com.es.service.ImportProjectsService;
 
 @Service
@@ -34,6 +37,9 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 
 	@Autowired
 	ImportProjectsRepository importProjectsRepository;
+	
+	@Autowired
+	ImportSprintRepository importSprintRepository;
 
 	Workbook workbook;
 
@@ -208,8 +214,45 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 	}
 
 	@Override
-	public List<ImportProjects> getProjectsByJiraUserName(String jiraUserName) {
-		return importProjectsRepository.findByJiraUserName(jiraUserName);
+	public List<ProjectInfoDto> getProjectsByJiraUserName(String jiraUserName) {
+	    List<ImportProjects> importProjects = importProjectsRepository.findByJiraUserName(jiraUserName);
+	    List<ProjectInfoDto> projectInfoDtoList = new ArrayList<>();
+
+	    for (ImportProjects project : importProjects) {
+	        List<ImportSprint> importSprints = importSprintRepository.findAllSprintByProjectId(project.getProjectId());
+
+	        String projectStartDate = null;
+	        String projectEndDate = null;
+
+	        if (importSprints != null && !importSprints.isEmpty()) {
+	            // If there are sprints for this project, find project start and end dates
+	            projectStartDate = importSprints.get(0).getStartDate();
+	            projectEndDate = importSprints.get(0).getEndDate();
+
+	            for (ImportSprint sprint : importSprints) {
+	                String sprintStartDate = sprint.getStartDate();
+	                String sprintEndDate = sprint.getEndDate();
+
+	                // Update project start date if needed
+	                if (sprintStartDate != null && projectStartDate != null &&
+	                        sprintStartDate.compareTo(projectStartDate) < 0) {
+	                    projectStartDate = sprintStartDate;
+	                }
+
+	                // Update project end date if needed
+	                if (sprintEndDate != null && projectEndDate != null &&
+	                        sprintEndDate.compareTo(projectEndDate) > 0) {
+	                    projectEndDate = sprintEndDate;
+	                }
+	            }
+	        }
+
+	        // Create ProjectInfoDto regardless of whether sprints exist or not
+	        ProjectInfoDto projectInfoDto = new ProjectInfoDto(project.getProjectId(), project.getProjectName(), project.getJiraUserName(), projectStartDate, projectEndDate);
+	        projectInfoDtoList.add(projectInfoDto);
+	    }
+
+	    return projectInfoDtoList;
 	}
 
 	@Override
@@ -252,6 +295,12 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 	private String generateProjectKey(ImportProjects project) {
 		// Create a composite key using projectId, projectName, and jiraUserName
 		return project.getProjectId() + "-" + project.getProjectName() + "-" + project.getJiraUserName();
+	}
+
+	@Override
+	public List<ProjectInfoDto> getProjectDates(List<ImportSprint> sprints, String jiraUserName) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

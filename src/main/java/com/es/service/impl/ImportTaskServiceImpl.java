@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import com.es.entity.ImportSprint;
 import com.es.entity.ImportTask;
 import com.es.entity.TaskEstimates;
+import com.es.entity.Worklog;
 import com.es.repository.ImportTaskRepository;
 import com.es.service.EstimatesService;
 import com.es.service.ImportTaskService;
@@ -135,83 +136,75 @@ public class ImportTaskServiceImpl implements ImportTaskService {
 
 	@Override
 	public int saveTaskData(List<ImportTask> importTasks) {
-	    // Check if the list of tasks is null or empty
 	    if (importTasks == null || importTasks.isEmpty()) {
-	        // No tasks to save, return 0
 	        return 0;
 	    }
-	    List<ImportTask> uniqueSprints = removeDuplicateProjects(importTasks);
-	    // Extract task IDs from the list
-	    Set<String> taskIds = uniqueSprints.stream()
-	            .filter(task -> task != null && task.getTaskId() != null && !task.getTaskId().isEmpty())
-	            .map(ImportTask::getTaskId)
-	            .collect(Collectors.toSet());
 
-	    // Create a set of sprint IDs
-	    Set<Integer> sprintIds = uniqueSprints.stream()
-	            .filter(task -> task != null && task.getSprintId() != 0)
-	            .map(ImportTask::getSprintId)
-	            .collect(Collectors.toSet());
+	    List<ImportTask> uniqueTasks = removeDuplicateProjects(importTasks);
 
-	    // Retrieve existing tasks from the database based on task IDs and sprint IDs
-	    List<ImportTask> existingTasks = taskRepository.findByTaskIdInAndSprintIdIn(taskIds, sprintIds);
+	    // Fetch existing tasks from the database based on task IDs and sprint IDs
+	    List<ImportTask> existingTasks = taskRepository.findByTaskIdInAndSprintIdIn(
+	            uniqueTasks.stream()
+	                    .filter(task -> task != null && task.getTaskId() != null && !task.getTaskId().isEmpty())
+	                    .map(ImportTask::getTaskId)
+	                    .collect(Collectors.toSet()),
+	            uniqueTasks.stream()
+	                    .filter(task -> task != null && task.getSprintId() != 0)
+	                    .map(ImportTask::getSprintId)
+	                    .collect(Collectors.toSet()));
 
-	    // Create a map of existing tasks for efficient lookup
 	    Map<String, ImportTask> existingTasksMap = existingTasks.stream()
 	            .collect(Collectors.toMap(task -> task.getTaskId() + "-" + task.getSprintId(), Function.identity()));
-	    
-	    
-	    // Create a list to store tasks that need to be saved or updated
+
 	    List<ImportTask> tasksToSave = new ArrayList<>();
 
-	    // Iterate over the import tasks
-	    for (ImportTask importTask : uniqueSprints) {
+	    for (ImportTask importTask : uniqueTasks) {
 	        String taskId = importTask.getTaskId();
 	        int sprintId = importTask.getSprintId();
 
 	        if (importTask != null && importTask.getSummary() != null && sprintId > 0) {
-
-	            // Check for duplicate task and sprint ID
 	            String key = taskId + "-" + sprintId;
 	            ImportTask existingTask = existingTasksMap.get(key);
-	            TaskEstimates estimates = new TaskEstimates();
 
 	            if (existingTask != null) {
-	                // Update existing task data
-	            	
 	                existingTask.setSummary(importTask.getSummary());
 	                existingTask.setTaskType(importTask.getTaskType());
 	                existingTask.setTaskPriority(importTask.getTaskPriority());
 	                existingTask.setTaskStatus(importTask.getTaskStatus());
 	                existingTask.setLabels(importTask.getLabels());
 	                existingTask.setTaskDescription(importTask.getTaskDescription());
-//	                existingTask.setThreePointEstimate(5);
 	                existingTask.setAiEstimate(importTask.getAiEstimate());
-//	                existingTask.setRiskFactor(6);
 	                existingTask.setOriginalEstimate(importTask.getOriginalEstimate());
 	                existingTask.setStoryPoints(importTask.getStoryPoints());
 	                existingTask.setAssignee(importTask.getAssignee());
 	                existingTask.setCreationDate(importTask.getCreationDate());
-	                tasksToSave.add(existingTask);
-	                continue;
-	            }
 
-	            // Save new task data to the list
-	            
-       
-//	            importTask.setThreePointEstimate(5);
-//	            importTask.setRiskFactor(6);
-	            tasksToSave.add(importTask);
+	                // Update worklogs and associate with the current task
+	                for (Worklog worklog : importTask.getWorklogs()) {
+	                    worklog.setImportTask(existingTask);
+	                }
+	                existingTask.setWorklogs(importTask.getWorklogs());
+
+	                tasksToSave.add(existingTask);
+	            } else {
+	                // Associate worklogs with the current task
+	                for (Worklog worklog : importTask.getWorklogs()) {
+	                    worklog.setImportTask(importTask);
+	                }
+	                importTask.setWorklogs(importTask.getWorklogs());
+
+	                tasksToSave.add(importTask);
+	            }
 	        }
 	    }
 
 	    if (!tasksToSave.isEmpty()) {
-	        // Save all tasks in one request
 	        taskRepository.saveAll(tasksToSave);
 	    }
 
 	    return tasksToSave.size();
 	}
+
 
 
 

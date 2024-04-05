@@ -1,5 +1,6 @@
 package com.es.repository;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -23,4 +24,14 @@ public interface ImportTaskRepository extends JpaRepository<ImportTask, Integer>
 	
 	@Query("SELECT t FROM ImportTask t WHERE t.taskId IN :taskIds AND t.sprintId IN :sprintIds")
     List<ImportTask> findByTaskIdInAndSprintIdIn(@Param("taskIds") Collection<String> taskIds, @Param("sprintIds") Collection<Integer> sprintIds);
+
+	@Query("SELECT i, w FROM ImportTask i INNER JOIN i.worklogs w WHERE w.updatedDate IN :sprintDates")
+	List<ImportTask> findAllTasksByUpdatedDate(@Param("sprintDates") Collection<LocalDate> sprintDates);
+
+
+	
+
+
 }
+
+
