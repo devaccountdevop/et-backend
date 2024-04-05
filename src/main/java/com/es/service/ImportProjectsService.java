@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.List;
 
+import com.es.dto.ProjectInfoDto;
 import com.es.entity.ClientCredentials;
 import com.es.entity.ImportProjects;
 
@@ -18,7 +19,7 @@ public interface ImportProjectsService {
 	ImportProjects updateClientCredentials(ImportProjects importProjects);
 	//ClientCredentials getClientCredentialsByUserId(int id);
 //	void deleteProjects(int userId);
-	List<ImportProjects> getProjectsByJiraUserName(String jiraUserName);
+	List<ProjectInfoDto> getProjectsByJiraUserName(String jiraUserName);
 //	public ClientCredentials updateClientCredentialsByUserId(ClientCredentials clientCredentials);
 	List<ImportProjects> saveProjectList(List<ImportProjects> importProjects);
 
