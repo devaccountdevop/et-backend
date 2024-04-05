@@ -308,10 +308,6 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 		return project.getProjectId() + "-" + project.getProjectName() + "-" + project.getJiraUserName();
 	}
 
-	@Override
-	public List<ProjectInfoDto> getProjectDates(List<ImportSprint> sprints, String jiraUserName) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	
 
 }

@@ -3,6 +3,7 @@ package com.es.service.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -194,102 +195,167 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 
 	@Override
 	public List<SprintInfoDto> getAllSprintByProjectId(int projectId) {
-		List<ImportSprint> sprintList = importSprintRepository.findAllSprintByProjectId(projectId);
-		if (sprintList.isEmpty()) {
-			return new ArrayList<>();
-		}
-		List<LocalDate> sprintDates = new ArrayList<>();
-		List<Integer> sprintIds = new ArrayList<>();
-		Map<Integer, List<String>> sprintDatesById = new HashMap<>() ;
-		for (ImportSprint sprint : sprintList) {
-			sprintIds.add(sprint.getSprintId());
-			sprintDatesById.put(sprint.getSprintId(), getDatesBetween(sprint.getStartDate(), sprint.getEndDate()));
-		}
+	    // Retrieve all sprints for the given project
+	    List<ImportSprint> sprintList = importSprintRepository.findAllSprintByProjectId(projectId);
+ 
+	    if (sprintList.isEmpty()) {
+	        // If there are no sprints, return an empty list
+	        return new ArrayList<>();
+	    }
+ 
+	    // Lists to store sprint dates, sprint IDs, and a map of sprint IDs to their dates
+	    List<LocalDate> sprintDates = new ArrayList<>();
+	    List<Integer> sprintIds = new ArrayList<>();
+	    Map<Integer, List<String>> sprintDatesById = new HashMap<>();
+ 
+	    // Iterate through sprintList to gather IDs and dates
+	    for (ImportSprint sprint : sprintList) {
+	        sprintIds.add(sprint.getSprintId());
+	        List<String> datesBetween = getDatesBetween(sprint.getStartDate(), sprint.getEndDate());
+	        sprintDatesById.put(sprint.getSprintId(), datesBetween);
+	    }
+ 
+	    // List to store SprintInfoDto objects
+	    List<SprintInfoDto> sprintDTOList = new ArrayList<>();
+ 
+	    // Iterate through sprintList to create SprintInfoDto objects
+	    for (ImportSprint sprint : sprintList) {
+	        SprintInfoDto sprintDTO = new SprintInfoDto(sprint.getId(), sprint.getProjectId(), sprint.getSprintId(),
+	                sprint.getSprintName(), "0", 0);
+	        sprintDTO.setSprintId(sprint.getSprintId());
+	        sprintDTO.setSprintName(sprint.getSprintName());
+ 
+	        int sumOriginalEstimate = 0;
+	        double sumAiEstimate = 0.0;
+ 
+	        // Retrieve tasks only for this sprint
+	        List<ImportTask> tasksForSprint = importTaskRepository.findAllTaskBySprintId(sprint.getSprintId());
+ 
+	        // Calculate sum of original estimate and AI estimate for tasks in this sprint
+	        for (ImportTask task : tasksForSprint) {
+	            sumOriginalEstimate += task.getOriginalEstimate();
+ 
+	            String aiEstimateString = task.getAiEstimate();
+	            if (aiEstimateString != null && !aiEstimateString.isEmpty()) {
+	                if (aiEstimateString.contains(".")) {
+	                    double aiEstimateDouble = Double.parseDouble(aiEstimateString);
+	                    sumAiEstimate += aiEstimateDouble;
+	                } else {
+	                    int aiEstimateInt = Integer.parseInt(aiEstimateString);
+	                    sumAiEstimate += aiEstimateInt;
+	                }
+	            } else {
+	                sumAiEstimate += 0;
+	            }
+	        }
+ 
+	        // Convert estimates to days
+	        sumOriginalEstimate /= 3600;
+	        sumOriginalEstimate /= 8;
+	        sumAiEstimate /= 8;
+ 
+	        sprintDTO.setSumOfOriginalEstimate(sumOriginalEstimate);
+ 
+	        String sumAiEstimateString = String.valueOf(sumAiEstimate);
+	        sprintDTO.setSumOfAiEstimate(sumAiEstimateString);
+ 
+	        // Check if there are sprint dates available
+	        if (sprintDatesById != null) {
+	            Map<String, List<GraphDataDto>> tasksBySprintDate = new HashMap<>();
+ 
+	            // Iterate through each sprint date
+	            for (String sprintDate : sprintDatesById.get(sprint.getSprintId())) {
+	                // Filter tasks for the current sprint and date
+	                List<ImportTask> tasksForSprintAndDate = tasksForSprint.stream()
+	                        .filter(task -> {
+	                            List<Worklog> worklogs = task.getWorklogs();
+	                            return worklogs != null && worklogs.stream().anyMatch(worklog -> {
+	                                String startedDate = worklog.getStartedDate();
+	                                DateTimeFormatter inputFormatter = DateTimeFormatter
+	                                        .ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+ 
+	                                // Parse the input string to LocalDate using the input formatter
+	                                if (startedDate == null) {
+	                                    return false;
+	                                }
+	                                LocalDate worklogDate = LocalDate.parse(startedDate, inputFormatter);
+ 
+	                                // Check if the worklog date matches the sprint date
+	                                return worklogDate.equals(LocalDate.parse(sprintDate));
+	                            });
+	                        })
+	                        .collect(Collectors.toList());
+ 
+	                // Create GraphDataDto objects for tasks on this sprint and date
+	                List<GraphDataDto> taskDto = new ArrayList<>();
+ 
+	                // Initialize variables to calculate aggregated values
+	                int totalActualEstimateInSeconds = 0;
+	                double totalAiEstimate = 0.0;
+	                int totalRemaining = 0;
+	                double totalVelocity = 0.0;
+ 
+	                for (ImportTask task : tasksForSprintAndDate) {
+	                    for (Worklog worklog : task.getWorklogs()) {
+	                        // Accumulate totalActualEstimate in seconds
+	                        totalActualEstimateInSeconds += task.getOriginalEstimate();
+	                        String aiEstimateString = task.getAiEstimate();
+	                        if (aiEstimateString != null && !aiEstimateString.isEmpty()) {
+	                            if (aiEstimateString.contains(".")) {
+	                                double aiEstimateDouble = Double.parseDouble(aiEstimateString);
+	                                totalAiEstimate += aiEstimateDouble;
+	                            } else {
+	                                int aiEstimateInt = Integer.parseInt(aiEstimateString);
+	                                totalAiEstimate += aiEstimateInt;
+	                            }
+	                        }
+	                        totalRemaining += task.getOriginalEstimate() - worklog.getTimeSpentSeconds();
+	                        String velocity = task.getStoryPoints();
+	                        if (velocity != null && !velocity.isEmpty()) {
+	                            if (velocity.contains(".")) {
+	                                double doubleVelocity = Double.parseDouble(velocity);
+	                                totalVelocity += doubleVelocity;
+	                            } else {
+	                                int intVelocity = Integer.parseInt(velocity);
+	                                totalVelocity += intVelocity;
+	                            }
+	                        }
+	                    }
+	                }
+ 
+	                // Convert totalActualEstimate from seconds to hours
+	                double totalActualEstimateInHours = totalActualEstimateInSeconds / 3600.0;
+ 
+	                // Convert totalRemaining from seconds to hours
+	                double totalRemainingInHours = totalRemaining / 3600.0;
 
-		List<ImportTask> taskList = importTaskRepository.findAllBySprintIds(sprintIds);
+ 
+	                // Create a single GraphDataDto object with aggregated values for this date
+	                GraphDataDto graphDataDto = new GraphDataDto();
+	                graphDataDto.setActualEstimate((int) totalActualEstimateInHours);
+	                graphDataDto.setAiEstimate(String.valueOf(totalAiEstimate));
+	                graphDataDto.setRemaining((int) totalRemainingInHours);
+	                // Convert totalVelocity to String before setting
+	                graphDataDto.setVelocity(String.valueOf(totalVelocity));
+	                // Add this single GraphDataDto object to the taskDto list
+	                taskDto.add(graphDataDto);
+ 
+	                // Put the taskDto list into the tasksBySprintDate map for this sprint date
+	                tasksBySprintDate.put(sprintDate, taskDto);
+	            }
+ 
+ 
+	            // Set the tasksBySprintDate map to the sprintDTO
+	            sprintDTO.setGraphData(tasksBySprintDate);
+	        }
+ 
+	        sprintDTOList.add(sprintDTO);
+	    }
+ 
+	    return sprintDTOList;
+	}
 
-		List<SprintInfoDto> sprintDTOList = new ArrayList<>();
-		for (ImportSprint sprint : sprintList) {
-			SprintInfoDto sprintDTO = new SprintInfoDto(sprint.getId(), sprint.getProjectId(), sprint.getSprintId(),
-					sprint.getSprintName(), "0", 0);
-			sprintDTO.setSprintId(sprint.getSprintId());
-			sprintDTO.setSprintName(sprint.getSprintName());
-			sprintDTO.setStartDate(sprint.getStartDate());
-			sprintDTO.setEndDate(sprint.getEndDate());
 
-			int sumOriginalEstimate = 0;
-			double sumAiEstimate = 0.0;
-			for (ImportTask task : taskList) {
-				if (task.getSprintId() == sprint.getSprintId()) {
-					sumOriginalEstimate += task.getOriginalEstimate();
-
-					String aiEstimateString = task.getAiEstimate();
-					if (aiEstimateString != null && !aiEstimateString.isEmpty()) {
-
-						if (aiEstimateString.contains(".")) {
-
-							double aiEstimateDouble = Double.parseDouble(aiEstimateString);
-							sumAiEstimate += aiEstimateDouble;
-						} else {
-
-							int aiEstimateInt = Integer.parseInt(aiEstimateString);
-							sumAiEstimate += aiEstimateInt;
-						}
-
-					} else {
-
-						sumAiEstimate += 0;
-
-					}
-				}
-			}
-
-			sumOriginalEstimate /= 3600;
-			sumOriginalEstimate /= 8;
-			sumAiEstimate /= 8;
-
-			sprintDTO.setSumOfOriginalEstimate(sumOriginalEstimate);
-
-			String sumAiEstimateString = String.valueOf(sumAiEstimate);
-			sprintDTO.setSumOfAiEstimate(sumAiEstimateString);
-
-			sprintDTOList.add(sprintDTO);
-		}
-
-		if (sprintDatesById != null) {
-		    Map<String, List<GraphDataDto>> tasksBySprintDate = new HashMap<>();
-		    for (Integer sprintId : sprintDatesById.keySet()) {
-		        List<String> sprintDates1 = sprintDatesById.get(sprintId);
-		        
-		        List<ImportTask> tasksForSprintId = taskList.stream()
-		            .filter(task -> sprintId.equals(task.getSprintId()))
-		            .collect(Collectors.toList());
-		        
-		        //List<String> sprintDates2 = getDatesBetween("2023-11-02", "2023-11-23");
-		        for (String sprintDate : sprintDates1) {
-		            List<ImportTask> filteredTasks = tasksForSprintId.stream()
-		                .filter(task -> task.getWorklogs().stream()
-		                    .anyMatch(worklog -> worklog.getUpdatedDate().equals(sprintDate)))
-		                .collect(Collectors.toList());
-		                
-		            List<GraphDataDto> taskDto = new ArrayList<>();
-		            for (ImportTask task : filteredTasks) {
-		                GraphDataDto graphDataDto = new GraphDataDto();
-		                for (Worklog worklog : task.getWorklogs()) {
-		                    graphDataDto.setActualEstimate(task.getActual());
-		                    graphDataDto.setAiEstimate(task.getAiEstimate());
-		                    graphDataDto.setRemaining(task.getOriginalEstimate() - worklog.getTimeSpentSeconds());
-		                    graphDataDto.setVelocity(task.getStoryPoints());
-		                    taskDto.add(graphDataDto);
-		                }
-		            }
-		            
-		            tasksBySprintDate.put(sprintDate, taskDto);
-		        }
-}}
-		    return sprintDTOList;    
-		}
-		    
 
 	public List<ImportSprint> removeDuplicateProjects(List<ImportSprint> sprints) {
 		if (sprints == null || sprints.isEmpty()) {
