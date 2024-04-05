@@ -7,10 +7,12 @@ import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -44,8 +46,18 @@ public class ImportTask {
 	
 	private String assignee;
 	private String creationDate;
+	@OneToMany(mappedBy = "importTask", cascade = CascadeType.PERSIST)
+	private List<Worklog> worklogs;
 	
 	
+
+	public List<Worklog> getWorklogs() {
+		return worklogs;
+	}
+
+	public void setWorklogs(List<Worklog> worklogs) {
+		this.worklogs = worklogs;
+	}
 
 	public String getAssignee() {
 		return assignee;
@@ -289,7 +301,7 @@ public class ImportTask {
 	}
 
 	public ImportTask(int sprintId, String summary, String taskId, String taskDescription, 
-			String aiEstimate, int actual, List<String> labels, TaskEstimates estimates, String storyPoints, int originalEstimate, String priority, String assignee, String creationDate) {
+			String aiEstimate, int actual, List<String> labels, TaskEstimates estimates, String storyPoints, int originalEstimate, String priority, String assignee, String creationDate, List<Worklog> worklogs) {
 		super();
 		this.sprintId = sprintId;
 		this.summary = summary;
@@ -306,6 +318,7 @@ public class ImportTask {
 		this.taskPriority = priority;
 		this.assignee = assignee;
 		this.creationDate = creationDate;
+		this.worklogs = worklogs;
 	}
 
 }

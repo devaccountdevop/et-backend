@@ -64,7 +64,7 @@ public class ProjectController {
     @GetMapping("getAllProjects/{clientId}")
     public GetProjectResponse getAllProjects(@PathVariable String clientId) {
         GetProjectResponse response = new GetProjectResponse();
-        ArrayList<ImportProjects> list = new ArrayList<>();
+        ArrayList<ProjectInfoDto> list = new ArrayList<>();
 
         try {
         	ClientCredentials clientCredentials = new ClientCredentials();
