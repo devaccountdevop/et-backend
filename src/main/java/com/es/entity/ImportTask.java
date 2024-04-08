@@ -16,6 +16,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Table(name = "jira_task")
 public class ImportTask {
@@ -47,6 +49,7 @@ public class ImportTask {
 	private String assignee;
 	private String creationDate;
 	@OneToMany(mappedBy = "importTask", cascade = CascadeType.PERSIST)
+	 @JsonIgnoreProperties("importTask")
 	private List<Worklog> worklogs;
 	
 	

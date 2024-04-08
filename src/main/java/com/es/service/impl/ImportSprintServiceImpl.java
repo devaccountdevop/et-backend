@@ -224,6 +224,8 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 	                sprint.getSprintName(), "0", 0);
 	        sprintDTO.setSprintId(sprint.getSprintId());
 	        sprintDTO.setSprintName(sprint.getSprintName());
+	        sprintDTO.setStartDate(sprint.getStartDate());
+	        sprintDTO.setEndDate(sprint.getEndDate());
  
 	        int sumOriginalEstimate = 0;
 	        double sumAiEstimate = 0.0;
@@ -294,6 +296,8 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 	                double totalAiEstimate = 0.0;
 	                int totalRemaining = 0;
 	                double totalVelocity = 0.0;
+	                double totalRiskFactor = 0.0 ;
+	                double totalThreePointEstimate = 0.0;																				
  
 	                for (ImportTask task : tasksForSprintAndDate) {
 	                    for (Worklog worklog : task.getWorklogs()) {
@@ -320,6 +324,26 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 	                                totalVelocity += intVelocity;
 	                            }
 	                        }
+	                        String riskFactorString = task.getRiskFactor();
+	                        if (riskFactorString != null && !riskFactorString.isEmpty()) {
+	                            if (riskFactorString.contains(".")) {
+	                                double doubleRiskFactor = Double.parseDouble(riskFactorString);
+	                                totalRiskFactor += doubleRiskFactor;
+	                            } else {
+	                                int intRiskFactor = Integer.parseInt(riskFactorString);
+	                                totalRiskFactor += intRiskFactor;
+	                            }
+	                        }
+	                        String threePointString = task.getThreePointEstimate();
+	                        if (threePointString != null && !threePointString.isEmpty()) {
+	                            if (threePointString.contains(".")) {
+	                                double doubleThreePoint = Double.parseDouble(threePointString);
+	                                totalThreePointEstimate += doubleThreePoint;
+	                            } else {
+	                                int intThreePoint = Integer.parseInt(threePointString);
+	                                totalThreePointEstimate += intThreePoint;
+	                            }
+	                        }
 	                    }
 	                }
  
@@ -335,6 +359,8 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 	                graphDataDto.setActualEstimate((int) totalActualEstimateInHours);
 	                graphDataDto.setAiEstimate(String.valueOf(totalAiEstimate));
 	                graphDataDto.setRemaining((int) totalRemainingInHours);
+	                graphDataDto.setThreePointEstimate(String.valueOf(totalThreePointEstimate));
+	                graphDataDto.setRiskFactor(String.valueOf(totalRiskFactor));
 	                // Convert totalVelocity to String before setting
 	                graphDataDto.setVelocity(String.valueOf(totalVelocity));
 	                // Add this single GraphDataDto object to the taskDto list
