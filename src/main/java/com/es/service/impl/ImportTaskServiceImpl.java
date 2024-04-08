@@ -179,18 +179,13 @@ public class ImportTaskServiceImpl implements ImportTaskService {
 	                existingTask.setAssignee(importTask.getAssignee());
 	                existingTask.setCreationDate(importTask.getCreationDate());
 
-	                // Update worklogs and associate with the current task
-	                for (Worklog worklog : importTask.getWorklogs()) {
-	                    worklog.setImportTask(existingTask);
-	                }
+	               
 	                existingTask.setWorklogs(importTask.getWorklogs());
 
 	                tasksToSave.add(existingTask);
 	            } else {
 	                // Associate worklogs with the current task
-	                for (Worklog worklog : importTask.getWorklogs()) {
-	                    worklog.setImportTask(importTask);
-	                }
+	               
 	                importTask.setWorklogs(importTask.getWorklogs());
 
 	                tasksToSave.add(importTask);

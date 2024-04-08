@@ -241,6 +241,10 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 	            projectEndDate = importSprints.get(0).getEndDate();
 
 	            for (ImportSprint sprint : importSprints) {
+	            	if(projectStartDate == null && projectEndDate == null) {
+	            		projectStartDate = sprint.getStartDate();
+	            		 projectEndDate = sprint.getEndDate();
+	            	}
 	                String sprintStartDate = sprint.getStartDate();
 	                String sprintEndDate = sprint.getEndDate();
 

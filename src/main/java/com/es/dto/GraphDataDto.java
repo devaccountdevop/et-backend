@@ -7,7 +7,26 @@ public class GraphDataDto {
 	private int remaining;
 	private String AiEstimate;
 	private String velocity;
+	private String riskFactor;
+	private String threePointEstimate;
 
+	
+
+	public String getRiskFactor() {
+		return riskFactor;
+	}
+
+	public void setRiskFactor(String riskFactor) {
+		this.riskFactor = riskFactor;
+	}
+
+	public String getThreePointEstimate() {
+		return threePointEstimate;
+	}
+
+	public void setThreePointEstimate(String threePointEstimate) {
+		this.threePointEstimate = threePointEstimate;
+	}
 
 	public int getActualEstimate() {
 		return actualEstimate;
