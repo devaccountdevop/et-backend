@@ -179,15 +179,44 @@ public class ImportTaskServiceImpl implements ImportTaskService {
 	                existingTask.setAssignee(importTask.getAssignee());
 	                existingTask.setCreationDate(importTask.getCreationDate());
 
-	               
-	                existingTask.setWorklogs(importTask.getWorklogs());
+	                // List to hold updated worklogs
+	                List<Worklog> updatedWorklogs = new ArrayList<>();
 
+	                // Update existing Worklogs and set task_id
+	                for (Worklog importWorklog : importTask.getWorklogs()) {
+	                    if (importWorklog.getId() == 0) {
+	                        // New Worklog, set task_id to existingTask's ID
+	                        importWorklog.setImportTask(existingTask);
+	                        updatedWorklogs.add(importWorklog);
+	                    } else {
+	                        // Existing Worklog, find corresponding one in existingTask
+	                        for (Worklog existingWorklog : existingTask.getWorklogs()) {
+	                            if (existingWorklog.getId()==(importWorklog.getId())) {
+	                                // Update existing Worklog fields
+	                                existingWorklog.setCreatedDate(importWorklog.getCreatedDate());
+	                                existingWorklog.setStartedDate(importWorklog.getStartedDate());
+	                                existingWorklog.setTimeSpent(importWorklog.getTimeSpent());
+	                                existingWorklog.setTimeSpentSeconds(importWorklog.getTimeSpentSeconds());
+	                                existingWorklog.setUpdatedDate(importWorklog.getUpdatedDate());
+	                                existingWorklog.setImportTask(existingTask); // Ensure task_id is set
+	                                updatedWorklogs.add(existingWorklog);
+	                                break; // Break once found
+	                            }
+	                        }
+	                    }
+	                }
+
+	                existingTask.setWorklogs(updatedWorklogs);
 	                tasksToSave.add(existingTask);
+	               
 	            } else {
 	                // Associate worklogs with the current task
 	               
+	                
+	            	for (Worklog worklog : importTask.getWorklogs()) {
+	                    worklog.setImportTask(importTask);
+	                }
 	                importTask.setWorklogs(importTask.getWorklogs());
-
 	                tasksToSave.add(importTask);
 	            }
 	        }
