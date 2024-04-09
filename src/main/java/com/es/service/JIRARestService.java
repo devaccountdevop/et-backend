@@ -14,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import com.es.dto.AiEstimatesDto;
@@ -24,6 +25,10 @@ import com.es.entity.ImportSprint;
 import com.es.entity.ImportTask;
 import com.es.entity.TaskEstimates;
 import com.es.entity.Worklog;
+import com.es.exceptions.JiraApiBadRequestException;
+import com.es.exceptions.JiraApiException;
+import com.es.exceptions.JiraApiUnauthException;
+import com.es.response.GetProjectResponse;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -69,66 +74,88 @@ public class JIRARestService {
 	@Autowired
 	ClientCredentialsService clientCredentialsService;
 
-	public List<ImportProjects> getAllProjects(int clientId) {
+	public GetProjectResponse getAllProjects(int clientId) {
+		GetProjectResponse response = new GetProjectResponse();
+
+		ClientCredentials clientCredentials = clientCredentialsService.getClientCredentials(clientId);
+
+		RestTemplate restTemplate = new RestTemplate();
+		HttpHeaders headers = new HttpHeaders();
+		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+		headers.setBasicAuth(clientCredentials.getJiraUserName(), clientCredentials.getToken());
+		HttpEntity<String> entity = new HttpEntity<>(headers);
+		ResponseEntity<String> responseEntity = null;
 		try {
-			ClientCredentials clientCredentials = clientCredentialsService.getClientCredentials(clientId);
+			responseEntity = restTemplate.exchange(jira_base_url + jira_get_project, HttpMethod.GET, entity,
+					String.class);
 
-			if (clientCredentials != null) {
-				RestTemplate restTemplate = new RestTemplate();
-				HttpHeaders headers = new HttpHeaders();
-				headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-				headers.setBasicAuth(clientCredentials.getJiraUserName(), clientCredentials.getToken());
-				HttpEntity<String> entity = new HttpEntity<>(headers);
+		} catch (HttpStatusCodeException ex) {
+			handleJiraApiErrors(ex);
+		}
 
-				ResponseEntity<String> responseEntity = restTemplate.exchange(jira_base_url + jira_get_project,
-						HttpMethod.GET, entity, String.class);
+		return handleImportProjectApiSuccessRes(clientCredentials, responseEntity);
 
-				if (responseEntity.getStatusCode().is2xxSuccessful()) {
-					String jsonResponse = responseEntity.getBody();
-					JsonParser jsonParser = new JsonParser();
-					JsonObject jsonObject = jsonParser.parse(jsonResponse).getAsJsonObject();
+	}
 
-					JsonArray values = jsonObject.getAsJsonArray("values");
+	private GetProjectResponse handleImportProjectApiSuccessRes(ClientCredentials clientCredentials,
+			ResponseEntity<String> responseEntity) {
+		GetProjectResponse response = new GetProjectResponse();
 
-					List<ImportProjects> projectInfoList = new ArrayList<>();
+		String jsonResponse = responseEntity.getBody();
+		JsonParser jsonParser = new JsonParser();
+		JsonObject jsonObject = jsonParser.parse(jsonResponse).getAsJsonObject();
 
-					for (int i = 0; i < values.size(); i++) {
-						JsonObject projectObject = values.get(i).getAsJsonObject();
-						int projectId = projectObject.get("id").getAsInt();
-						JsonObject location = projectObject.getAsJsonObject("location");
-						String projectName = location.get("projectName").getAsString();
+		JsonArray values = jsonObject.getAsJsonArray("values");
 
-						ImportProjects projectInfo = new ImportProjects(projectId, projectName,
-								clientCredentials.getJiraUserName());
-						projectInfoList.add(projectInfo);
-					}
+		List<ImportProjects> projectInfoList = new ArrayList<>();
 
-					return projectInfoList;
-				} else {
-					// Handle non-successful HTTP response
-					// You can log the error, throw an exception, or handle it based on your
-					// requirements.
-					return null;
-				}
-			} else {
-				// Handle the case where client credentials are not found
-				// You can log the error, throw an exception, or handle it based on your
-				// requirements.
-				return null;
+		for (int i = 0; i < values.size(); i++) {
+			JsonObject projectObject = values.get(i).getAsJsonObject();
+			int projectId = projectObject.get("id").getAsInt();
+			JsonObject location = projectObject.getAsJsonObject("location");
+			String projectName = location.get("projectName").getAsString();
+
+			ImportProjects projectInfo = new ImportProjects(projectId, projectName,
+					clientCredentials.getJiraUserName());
+			projectInfoList.add(projectInfo);
+		}
+		response.setCode(responseEntity.getStatusCodeValue());
+		response.setMessage("Success");
+		response.setData(projectInfoList);
+		return response;
+	}
+
+	private void handleJiraApiErrors(HttpStatusCodeException responseEntity) {
+		if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+			switch (responseEntity.getStatusCode()) {
+			case UNAUTHORIZED:
+				handleUnauthorized(responseEntity);
+			case BAD_REQUEST:
+				handleBadRequest(responseEntity);
+			default:
+				handleDefaultError(responseEntity);
 			}
-		} catch (HttpClientErrorException.Unauthorized unauthorizedException) {
-			// Handle unauthorized (401) error, e.g., incorrect username or token
-			// You can log the error, throw a custom exception, or handle it based on your
-			// requirements.
-			unauthorizedException.printStackTrace(); // Log the error or handle it based on your requirements.
-			return null;
-		} catch (Exception e) {
-			// Handle other exceptions
-			e.printStackTrace(); // Log the exception or handle it based on your requirements.
-			return null;
+
 		}
 	}
 
+	private void handleDefaultError(HttpStatusCodeException responseEntity) {
+		throw new JiraApiException(responseEntity.getLocalizedMessage(), responseEntity.getRawStatusCode(),
+				responseEntity.getLocalizedMessage());
+
+	}
+
+	private void handleBadRequest(HttpStatusCodeException responseEntity) {
+		throw new JiraApiBadRequestException(responseEntity.getLocalizedMessage(), responseEntity.getRawStatusCode(),
+				responseEntity.getLocalizedMessage());
+
+	}
+
+	private void handleUnauthorized(HttpStatusCodeException responseEntity) {
+		throw new JiraApiUnauthException(responseEntity.getLocalizedMessage(), responseEntity.getRawStatusCode(),
+				responseEntity.getLocalizedMessage());
+
+	}
 	public List<ImportSprint> getAllSprintsByProjectId(int projectId, int clientId) {
 		try {
 			ClientCredentials clientCredentials = clientCredentialsService.getClientCredentials(clientId);
@@ -262,35 +289,30 @@ public class JIRARestService {
 						String taskType = taskObj.get("name").getAsString();
 						List<Worklog> worklogs = new ArrayList<>();
 						if (taskType != "story") {
+						    JsonObject worklogobj = fields.getAsJsonObject("worklog");
+						    JsonArray worklog = (worklogobj != null) ? worklogobj.getAsJsonArray("worklogs") : null;
 
-							JsonObject worklogobj = fields.getAsJsonObject("worklog");
-							// JsonArray worklog = worklogobj.getAsJsonArray("worklogs");
-							JsonArray worklog = (worklogobj != null) ? worklogobj.getAsJsonArray("worklogs") : null;
+						    if (worklog != null && worklog.size() > 0) {
+						        for (int j = 0; j < worklog.size(); j++) {
+						            JsonObject worklogObject = worklog.get(j).getAsJsonObject();
+						            String startedDate = worklogObject.get("started").isJsonNull() ? null
+						                    : worklogObject.get("started").getAsString();
+						            int timeSpentSeconds = worklogObject.get("timeSpentSeconds").isJsonNull() ? 0
+						                    : worklogObject.get("timeSpentSeconds").getAsInt();
+						            String createdDate1 = worklogObject.get("created").isJsonNull() ? null
+						                    : worklogObject.get("created").getAsString();
+						            String updatedDate = worklogObject.get("updated").isJsonNull() ? null
+						                    : worklogObject.get("updated").getAsString();
+						            String timeSpent = worklogObject.get("timeSpent").isJsonNull() ? null
+						                    : worklogObject.get("timeSpent").getAsString();
 
-							if (worklogobj == null) {
-
-								Worklog worklogInfo = new Worklog(issueId, null, null, null, null, 0);
-								worklogs.add(worklogInfo);
-							} else if (worklog != null && worklog.size() > 0) {
-								for (int j = 0; j < worklog.size(); j++) {
-									JsonObject worklogObject = worklog.get(j).getAsJsonObject();
-									String startedDate = worklogObject.get("started").isJsonNull() ? null
-											: worklogObject.get("started").getAsString();
-									int timeSpentSeconds = worklogObject.get("timeSpentSeconds").isJsonNull() ? 0
-											: worklogObject.get("timeSpentSeconds").getAsInt();
-									String createdDate1 = worklogObject.get("created").isJsonNull() ? null
-											: worklogObject.get("created").getAsString();
-									String updatedDate = worklogObject.get("updated").isJsonNull() ? null
-											: worklogObject.get("updated").getAsString();
-									String timeSpent = worklogObject.get("timeSpent").isJsonNull() ? null
-											: worklogObject.get("timeSpent").getAsString();
-
-									Worklog worklogInfo = new Worklog(issueId, createdDate1, updatedDate, startedDate,
-											timeSpent, timeSpentSeconds);
-									worklogs.add(worklogInfo);
-								}
-							}
+						            Worklog worklogInfo = new Worklog(issueId, createdDate1, updatedDate, startedDate,
+						                    timeSpent, timeSpentSeconds);
+						            worklogs.add(worklogInfo);
+						        }
+						    }
 						}
+
 
 						JsonElement assigneeElement = fields.get("assignee");
 						String assigne = null;
