@@ -1,5 +1,7 @@
 package com.es.dto;
 
+import java.util.List;
+
 public class ProjectInfoDto {
 
 	private int projectId;
@@ -7,6 +9,18 @@ public class ProjectInfoDto {
 	private String jiraUserName;
 	private String projectStartDate;
 	private String projectEndDate;
+	private List<SprintInfoDto> sprintInfo;
+	
+
+	
+
+	public List<SprintInfoDto> getSprintInfoDtos() {
+		return sprintInfo;
+	}
+
+	public void setSprintInfoDtos(List<SprintInfoDto> sprintInfoDtos) {
+		this.sprintInfo = sprintInfoDtos;
+	}
 
 	public int getProjectId() {
 		return projectId;
@@ -49,13 +63,14 @@ public class ProjectInfoDto {
 	}
 
 	public ProjectInfoDto(int projectId, String projectName, String jiraUserName, String projectStartDate,
-			String projectEndDate) {
+			String projectEndDate, List<SprintInfoDto> dtos) {
 		super();
 		this.projectId = projectId;
 		this.projectName = projectName;
 		this.jiraUserName = jiraUserName;
 		this.projectStartDate = projectStartDate;
 		this.projectEndDate = projectEndDate;
+		this.sprintInfo = dtos;
 	}
 
 	public ProjectInfoDto() {

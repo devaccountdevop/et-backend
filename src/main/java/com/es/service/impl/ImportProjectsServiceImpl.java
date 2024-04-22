@@ -25,12 +25,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.es.dto.ProjectInfoDto;
+import com.es.dto.SprintInfoDto;
 import com.es.entity.ClientCredentials;
 import com.es.entity.ImportProjects;
 import com.es.entity.ImportSprint;
 import com.es.repository.ImportProjectsRepository;
 import com.es.repository.ImportSprintRepository;
 import com.es.service.ImportProjectsService;
+import com.es.service.ImportSprintService;
 
 @Service
 public class ImportProjectsServiceImpl implements ImportProjectsService {
@@ -42,6 +44,9 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 	ImportSprintRepository importSprintRepository;
 
 	Workbook workbook;
+	
+	@Autowired
+	ImportSprintService importSprintService;
 
 //	@Override
 //	public List<ImportProjects> getProjectDataAsList(InputStream inputStream) {
@@ -230,17 +235,19 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 	    List<ProjectInfoDto> projectInfoDtoList = new ArrayList<>();
 
 	    for (ImportProjects project : importProjects) {
-	        List<ImportSprint> importSprints = importSprintRepository.findAllSprintByProjectId(project.getProjectId());
-
+//	        List<ImportSprint> importSprints = importSprintRepository.findAllSprintByProjectId(project.getProjectId());
+	        List<SprintInfoDto> importSprints = importSprintService.getAllSprintByProjectId(project.getProjectId());
 	        String projectStartDate = null;
 	        String projectEndDate = null;
+	        
+	      
 
 	        if (importSprints != null && !importSprints.isEmpty()) {
 	            // If there are sprints for this project, find project start and end dates
 	            projectStartDate = importSprints.get(0).getStartDate();
 	            projectEndDate = importSprints.get(0).getEndDate();
 
-	            for (ImportSprint sprint : importSprints) {
+	            for (SprintInfoDto sprint : importSprints) {
 	            	if(projectStartDate == null && projectEndDate == null) {
 	            		projectStartDate = sprint.getStartDate();
 	            		 projectEndDate = sprint.getEndDate();
@@ -263,7 +270,7 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 	        }
 
 	        // Create ProjectInfoDto regardless of whether sprints exist or not
-	        ProjectInfoDto projectInfoDto = new ProjectInfoDto(project.getProjectId(), project.getProjectName(), project.getJiraUserName(), projectStartDate, projectEndDate);
+	        ProjectInfoDto projectInfoDto = new ProjectInfoDto(project.getProjectId(), project.getProjectName(), project.getJiraUserName(), projectStartDate, projectEndDate, importSprints);
 	        projectInfoDtoList.add(projectInfoDto);
 	    }
 

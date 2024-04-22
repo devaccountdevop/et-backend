@@ -48,12 +48,10 @@ public class ImportTask {
 	
 	private String assignee;
 	private String creationDate;
-	@OneToMany(mappedBy = "importTask", cascade = CascadeType.PERSIST)
+	@OneToMany(mappedBy = "importTask", cascade = CascadeType.ALL)
 	 @JsonIgnoreProperties("importTask")
 	private List<Worklog> worklogs;
 	
-	
-
 	public List<Worklog> getWorklogs() {
 		return worklogs;
 	}
