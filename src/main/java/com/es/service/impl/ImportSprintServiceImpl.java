@@ -2,6 +2,7 @@ package com.es.service.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -426,9 +427,13 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 
 	    LocalDate start = LocalDate.parse(startDate.substring(0, 10));
 	    LocalDate end = LocalDate.parse(endDate.substring(0, 10));
+
 	    List<String> dates = new ArrayList<>();
-	    for (LocalDate date = start; !date.equals(end); date = date.plusDays(1)) {
-	        dates.add(date.toString());
+	    for (LocalDate date = start; !date.isAfter(end); date = date.plusDays(1)) {
+	        // Skip weekends (Saturday and Sunday)
+	        if (date.getDayOfWeek() != DayOfWeek.SATURDAY && date.getDayOfWeek() != DayOfWeek.SUNDAY) {
+	            dates.add(date.toString());
+	        }
 	    }
 	    return dates;
 	}

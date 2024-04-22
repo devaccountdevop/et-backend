@@ -24,11 +24,11 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.es.entity.ImportSprint;
 import com.es.entity.ImportTask;
 import com.es.entity.TaskEstimates;
 import com.es.entity.Worklog;
 import com.es.repository.ImportTaskRepository;
+import com.es.repository.WorklogRepository;
 import com.es.service.EstimatesService;
 import com.es.service.ImportTaskService;
 
@@ -37,6 +37,7 @@ public class ImportTaskServiceImpl implements ImportTaskService {
 
 	@Autowired
 	EstimatesService estimatesService;
+	WorklogRepository worklogRepository;
 	
 	
 	@Autowired
@@ -178,41 +179,34 @@ public class ImportTaskServiceImpl implements ImportTaskService {
 	                existingTask.setStoryPoints(importTask.getStoryPoints());
 	                existingTask.setAssignee(importTask.getAssignee());
 	                existingTask.setCreationDate(importTask.getCreationDate());
+	                
+//	                
+//	                List<Worklog> updatedWorklogs = new ArrayList<>();
+//	                for (Worklog worklog : existingTask.getWorklogs()) {
+//	                	Worklog existingWorklog  = new Worklog();
+//	                    if (worklog.getId() != null) {
+//	                    	existingWorklog = worklogRepository.findById(worklog.getId())
+//	                                .orElseThrow(() -> new RuntimeException("worklog not found"));
+//	                        existingWorklog.setCreatedDate(worklog.getCreatedDate());
+//                            existingWorklog.setStartedDate(worklog.getStartedDate());
+//                            existingWorklog.setTimeSpent(worklog.getTimeSpent());
+//                            existingWorklog.setTimeSpentSeconds(worklog.getTimeSpentSeconds());
+//                            existingWorklog.setUpdatedDate(worklog.getUpdatedDate());
+//                            existingWorklog.setImportTask(existingTask); // Ensure task_id is set
+//                            updatedWorklogs.add(existingWorklog);
+//	                    } else {
+//	                    	existingWorklog = worklog;
+//	                    	existingWorklog.setImportTask(importTask);
+//	                    }
+//	                    updatedWorklogs.add(existingWorklog);
+//	                }
 
-	                // List to hold updated worklogs
-	                List<Worklog> updatedWorklogs = new ArrayList<>();
-
-	                // Update existing Worklogs and set task_id
-	                for (Worklog importWorklog : importTask.getWorklogs()) {
-	                    if (importWorklog.getId() == 0) {
-	                        // New Worklog, set task_id to existingTask's ID
-	                        importWorklog.setImportTask(existingTask);
-	                        updatedWorklogs.add(importWorklog);
-	                    } else {
-	                        // Existing Worklog, find corresponding one in existingTask
-	                        for (Worklog existingWorklog : existingTask.getWorklogs()) {
-	                            if (existingWorklog.getId()==(importWorklog.getId())) {
-	                                // Update existing Worklog fields
-	                                existingWorklog.setCreatedDate(importWorklog.getCreatedDate());
-	                                existingWorklog.setStartedDate(importWorklog.getStartedDate());
-	                                existingWorklog.setTimeSpent(importWorklog.getTimeSpent());
-	                                existingWorklog.setTimeSpentSeconds(importWorklog.getTimeSpentSeconds());
-	                                existingWorklog.setUpdatedDate(importWorklog.getUpdatedDate());
-	                                existingWorklog.setImportTask(existingTask); // Ensure task_id is set
-	                                updatedWorklogs.add(existingWorklog);
-	                                break; // Break once found
-	                            }
-	                        }
-	                    }
-	                }
-
-	                existingTask.setWorklogs(updatedWorklogs);
+//	                importTask.setWorklogs(updatedWorklogs);
+	    
 	                tasksToSave.add(existingTask);
 	               
 	            } else {
-	                // Associate worklogs with the current task
-	               
-	                
+	             
 	            	for (Worklog worklog : importTask.getWorklogs()) {
 	                    worklog.setImportTask(importTask);
 	                }

@@ -1,6 +1,7 @@
 package com.es.entity;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -12,7 +13,7 @@ public class Worklog {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
+	private Long id;
 	private String taskid;
 	private String createdDate;
 	private String updatedDate;
@@ -21,7 +22,7 @@ public class Worklog {
 	private int timeSpentSeconds;
 
 	@ManyToOne
-	@JoinColumn(name = "import_task_id")
+    @JoinColumn(name = "import_task_id")
 	private ImportTask importTask;
 
 	public ImportTask getImportTask() {
@@ -32,11 +33,13 @@ public class Worklog {
 		this.importTask = importTask;
 	}
 
-	public int getId() {
+	
+
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
