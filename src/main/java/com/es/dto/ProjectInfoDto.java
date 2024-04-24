@@ -2,6 +2,8 @@ package com.es.dto;
 
 import java.util.List;
 
+import com.es.entity.ImportSprint;
+
 public class ProjectInfoDto {
 
 	private int projectId;
@@ -9,16 +11,16 @@ public class ProjectInfoDto {
 	private String jiraUserName;
 	private String projectStartDate;
 	private String projectEndDate;
-	private List<SprintInfoDto> sprintInfo;
+	private List<ProjectGraphDto> sprintInfo;
 	
 
 	
 
-	public List<SprintInfoDto> getSprintInfoDtos() {
+	public List<ProjectGraphDto> getSprintInfoDtos() {
 		return sprintInfo;
 	}
 
-	public void setSprintInfoDtos(List<SprintInfoDto> sprintInfoDtos) {
+	public void setSprintInfoDtos(List<ProjectGraphDto> sprintInfoDtos) {
 		this.sprintInfo = sprintInfoDtos;
 	}
 
@@ -63,7 +65,7 @@ public class ProjectInfoDto {
 	}
 
 	public ProjectInfoDto(int projectId, String projectName, String jiraUserName, String projectStartDate,
-			String projectEndDate, List<SprintInfoDto> dtos) {
+			String projectEndDate, List<ProjectGraphDto> dtos) {
 		super();
 		this.projectId = projectId;
 		this.projectName = projectName;

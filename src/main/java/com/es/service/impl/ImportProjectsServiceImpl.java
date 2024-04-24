@@ -24,15 +24,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.es.dto.ProjectGraphDto;
 import com.es.dto.ProjectInfoDto;
 import com.es.dto.SprintInfoDto;
 import com.es.entity.ClientCredentials;
 import com.es.entity.ImportProjects;
 import com.es.entity.ImportSprint;
+import com.es.entity.ImportTask;
 import com.es.repository.ImportProjectsRepository;
 import com.es.repository.ImportSprintRepository;
 import com.es.service.ImportProjectsService;
 import com.es.service.ImportSprintService;
+import com.es.service.ImportTaskService;
 
 @Service
 public class ImportProjectsServiceImpl implements ImportProjectsService {
@@ -42,6 +45,9 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 	
 	@Autowired
 	ImportSprintRepository importSprintRepository;
+	
+	@Autowired
+	ImportTaskService importTaskService;
 
 	Workbook workbook;
 	
@@ -239,22 +245,32 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 	        List<SprintInfoDto> importSprints = importSprintService.getAllSprintByProjectId(project.getProjectId());
 	        String projectStartDate = null;
 	        String projectEndDate = null;
-	        
+	        List<ProjectGraphDto> projectGraphDto = new ArrayList();
 	      
 
 	        if (importSprints != null && !importSprints.isEmpty()) {
 	            // If there are sprints for this project, find project start and end dates
 	            projectStartDate = importSprints.get(0).getStartDate();
 	            projectEndDate = importSprints.get(0).getEndDate();
+	            
+//	            List<ImportTask> taskinfo = new ArrayList();
 
 	            for (SprintInfoDto sprint : importSprints) {
 	            	if(projectStartDate == null && projectEndDate == null) {
 	            		projectStartDate = sprint.getStartDate();
 	            		 projectEndDate = sprint.getEndDate();
 	            	}
+	            	ProjectGraphDto graphDto = new ProjectGraphDto();
+	            	
+	            	graphDto.setTaskDetails(importTaskService.getAllTaskBySprintId(sprint.getSprintId()));
+	            	graphDto.setEndDate(sprint.getEndDate());
+	            	graphDto.setProjectId(sprint.getProjectId());
+	            	graphDto.setSprintId(sprint.getSprintId());
+	            	graphDto.setSprintName(sprint.getSprintName());
+	            	graphDto.setStartDate(sprint.getStartDate());
 	                String sprintStartDate = sprint.getStartDate();
 	                String sprintEndDate = sprint.getEndDate();
-
+	                projectGraphDto.add(graphDto);
 	                // Update project start date if needed
 	                if (sprintStartDate != null && projectStartDate != null &&
 	                        sprintStartDate.compareTo(projectStartDate) < 0) {
@@ -270,7 +286,7 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 	        }
 
 	        // Create ProjectInfoDto regardless of whether sprints exist or not
-	        ProjectInfoDto projectInfoDto = new ProjectInfoDto(project.getProjectId(), project.getProjectName(), project.getJiraUserName(), projectStartDate, projectEndDate, importSprints);
+	        ProjectInfoDto projectInfoDto = new ProjectInfoDto(project.getProjectId(), project.getProjectName(), project.getJiraUserName(), projectStartDate, projectEndDate, projectGraphDto);
 	        projectInfoDtoList.add(projectInfoDto);
 	    }
 

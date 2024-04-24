@@ -302,7 +302,7 @@ public class ImportTask {
 	}
 
 	public ImportTask(int sprintId, String summary, String taskId, String taskDescription, 
-			String aiEstimate, int actual, List<String> labels, TaskEstimates estimates, String storyPoints, int originalEstimate, String priority, String assignee, String creationDate, List<Worklog> worklogs) {
+			String aiEstimate, int actual, List<String> labels, TaskEstimates estimates, String storyPoints, int originalEstimate, String priority, String assignee, String creationDate, String taskStatus, List<Worklog> worklogs) {
 		super();
 		this.sprintId = sprintId;
 		this.summary = summary;
@@ -319,6 +319,7 @@ public class ImportTask {
 		this.taskPriority = priority;
 		this.assignee = assignee;
 		this.creationDate = creationDate;
+		this.taskStatus = taskStatus;
 		this.worklogs = worklogs;
 	}
 

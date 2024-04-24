@@ -179,7 +179,7 @@ public class ImportTaskServiceImpl implements ImportTaskService {
 	                existingTask.setStoryPoints(importTask.getStoryPoints());
 	                existingTask.setAssignee(importTask.getAssignee());
 	                existingTask.setCreationDate(importTask.getCreationDate());
-	                
+	                existingTask.setTaskStatus(importTask.getTaskStatus());
 //	                
 //	                List<Worklog> updatedWorklogs = new ArrayList<>();
 //	                for (Worklog worklog : existingTask.getWorklogs()) {

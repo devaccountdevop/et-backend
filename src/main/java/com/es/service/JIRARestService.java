@@ -285,6 +285,9 @@ public class JIRARestService {
 						String issueId = issueObject.get("key").getAsString();
 
 						JsonObject fields = issueObject.getAsJsonObject("fields");
+						JsonObject statusObj = fields.getAsJsonObject("status");
+						String taskStatus = statusObj.get("name").getAsString();
+						
 						JsonObject taskObj = fields.getAsJsonObject("issuetype");
 						String taskType = taskObj.get("name").getAsString();
 						List<Worklog> worklogs = new ArrayList<>();
@@ -369,7 +372,7 @@ public class JIRARestService {
 						taskEstimates.setTaskId(issueId);
 						ImportTask taskInfo = new ImportTask(SprintId, issueName, issueId, issueDescription, aiEstimate,
 								0, labelsList, taskEstimates, storyPoints, originalEstimate, priority, assigne,
-								createdDate, worklogs);
+								createdDate,taskStatus, worklogs);
 						taskInfoList.add(taskInfo);
 					}
 
