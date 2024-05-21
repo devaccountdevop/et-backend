@@ -5,6 +5,15 @@ public class AiResponseDto {
 	private String aiEstimate;
 	private String threePointEstimate;
 	private String riskFactor;
+	private String replaced;
+	
+	
+	public String getReplaced() {
+		return replaced;
+	}
+	public void setReplaced(String replaced) {
+		this.replaced = replaced;
+	}
 	public String getAiEstimate() {
 		return aiEstimate;
 	}

@@ -10,7 +10,7 @@ import com.es.entity.TaskEstimates;
 		private String description;
 		private List<TaskEstimates>	estimates;
 		private int threePointEstimate;
-		private int aiEstimate;
+		private String aiEstimate;
 		private int actual;
 		private List<String> labels;
 		private int riskFactor;
@@ -28,7 +28,7 @@ import com.es.entity.TaskEstimates;
 		}
 
 		public SprintListPageDto(String id, String title, String description, List<TaskEstimates> estimates,
-				int threePointEstimate, int aiEstimate, int actual, List<String> labels) {
+				int threePointEstimate, String aiEstimate, int actual, List<String> labels) {
 			super();
 			this.id = id;
 			this.title = title;
@@ -40,7 +40,7 @@ import com.es.entity.TaskEstimates;
 			this.labels = labels;
 		}
 		
-		public SprintListPageDto(String id, String title, String description, List<TaskEstimates> estimates, List<String> labels, int ai, int riskFactor) {
+		public SprintListPageDto(String id, String title, String description, List<TaskEstimates> estimates, List<String> labels, String ai, int riskFactor) {
 			super();
 			this.id = id;
 			this.title = title;
@@ -109,10 +109,10 @@ import com.es.entity.TaskEstimates;
 		public void setThreePointEstimate(int threePointEstimate) {
 			this.threePointEstimate = threePointEstimate;
 		}
-		public int getAiEstimate() {
+		public String getAiEstimate() {
 			return aiEstimate;
 		}
-		public void setAiEstimate(int aiEstimate) {
+		public void setAiEstimate(String aiEstimate) {
 			this.aiEstimate = aiEstimate;
 		}
 		public int getActual() {

@@ -247,14 +247,15 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 	        String projectEndDate = null;
 	        List<ProjectGraphDto> projectGraphDto = new ArrayList();
 	      
-
+	        int sumOriginalEstimate = 0;
+	        double sumAiEstimate = 0.0;
 	        if (importSprints != null && !importSprints.isEmpty()) {
 	            // If there are sprints for this project, find project start and end dates
 	            projectStartDate = importSprints.get(0).getStartDate();
 	            projectEndDate = importSprints.get(0).getEndDate();
 	            
-//	            List<ImportTask> taskinfo = new ArrayList();
-
+	           
+		        
 	            for (SprintInfoDto sprint : importSprints) {
 	            	if(projectStartDate == null && projectEndDate == null) {
 	            		projectStartDate = sprint.getStartDate();
@@ -263,6 +264,23 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 	            	ProjectGraphDto graphDto = new ProjectGraphDto();
 	            	
 	            	graphDto.setTaskDetails(importTaskService.getAllTaskBySprintId(sprint.getSprintId()));
+	            	 sumOriginalEstimate += sprint.getSumOfOriginalEstimate();
+	            	String aiEstimateString = sprint.getSumOfAiEstimate();
+		            if (aiEstimateString != null && !aiEstimateString.isEmpty()) {
+		                if (aiEstimateString.contains(".")) {
+		                    double aiEstimateDouble = Double.parseDouble(aiEstimateString);
+		                    sumAiEstimate += aiEstimateDouble;
+		                } else {
+		                    int aiEstimateInt = Integer.parseInt(aiEstimateString);
+		                    sumAiEstimate += aiEstimateInt;
+		                }
+		            } else {
+		                sumAiEstimate += 0;
+		            }
+		        
+	 
+		       
+		       
 	            	graphDto.setEndDate(sprint.getEndDate());
 	            	graphDto.setProjectId(sprint.getProjectId());
 	            	graphDto.setSprintId(sprint.getSprintId());
@@ -283,10 +301,11 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 	                    projectEndDate = sprintEndDate;
 	                }
 	            }
+	            
 	        }
 
 	        // Create ProjectInfoDto regardless of whether sprints exist or not
-	        ProjectInfoDto projectInfoDto = new ProjectInfoDto(project.getProjectId(), project.getProjectName(), project.getJiraUserName(), projectStartDate, projectEndDate, projectGraphDto);
+	        ProjectInfoDto projectInfoDto = new ProjectInfoDto(project.getProjectId(), project.getProjectName(), project.getJiraUserName(), projectStartDate, projectEndDate, projectGraphDto, String.valueOf(sumAiEstimate), sumOriginalEstimate);
 	        projectInfoDtoList.add(projectInfoDto);
 	    }
 

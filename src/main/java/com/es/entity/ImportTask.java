@@ -31,6 +31,7 @@ public class ImportTask {
 	private String taskType;
 	private String taskPriority;
 	private String taskStatus;
+	private String replaced;
 	@Column(length=3000)
 	private String taskDescription;
 	@OneToOne(cascade = CascadeType.ALL)
@@ -52,6 +53,16 @@ public class ImportTask {
 	 @JsonIgnoreProperties("importTask")
 	private List<Worklog> worklogs;
 	
+	
+	
+	public String getReplaced() {
+		return replaced;
+	}
+
+	public void setReplaced(String replaced) {
+		this.replaced = replaced;
+	}
+
 	public List<Worklog> getWorklogs() {
 		return worklogs;
 	}
@@ -302,7 +313,7 @@ public class ImportTask {
 	}
 
 	public ImportTask(int sprintId, String summary, String taskId, String taskDescription, 
-			String aiEstimate, int actual, List<String> labels, TaskEstimates estimates, String storyPoints, int originalEstimate, String priority, String assignee, String creationDate, String taskStatus, List<Worklog> worklogs) {
+			String aiEstimate, int actual, List<String> labels, TaskEstimates estimates, String storyPoints, int originalEstimate, String priority, String assignee, String creationDate, String taskStatus, List<Worklog> worklogs , String threePointEstimate,String riskFactor) {
 		super();
 		this.sprintId = sprintId;
 		this.summary = summary;
@@ -321,6 +332,8 @@ public class ImportTask {
 		this.creationDate = creationDate;
 		this.taskStatus = taskStatus;
 		this.worklogs = worklogs;
+		this.threePointEstimate = threePointEstimate;
+		this.riskFactor = riskFactor;
 	}
 
 }

@@ -11,10 +11,28 @@ public class ProjectInfoDto {
 	private String jiraUserName;
 	private String projectStartDate;
 	private String projectEndDate;
+	private String sumOfAiEstimate;
+	private int sumOfOriginalEstimate;
 	private List<ProjectGraphDto> sprintInfo;
 	
 
 	
+
+	public String getSumOfAiEstimate() {
+		return sumOfAiEstimate;
+	}
+
+	public void setSumOfAiEstimate(String sumOfAiEstimate) {
+		this.sumOfAiEstimate = sumOfAiEstimate;
+	}
+
+	public int getSumOfOriginalEstimate() {
+		return sumOfOriginalEstimate;
+	}
+
+	public void setSumOfOriginalEstimate(int sumOfOriginalEstimate) {
+		this.sumOfOriginalEstimate = sumOfOriginalEstimate;
+	}
 
 	public List<ProjectGraphDto> getSprintInfoDtos() {
 		return sprintInfo;
@@ -65,7 +83,7 @@ public class ProjectInfoDto {
 	}
 
 	public ProjectInfoDto(int projectId, String projectName, String jiraUserName, String projectStartDate,
-			String projectEndDate, List<ProjectGraphDto> dtos) {
+			String projectEndDate, List<ProjectGraphDto> dtos, String sumOfAiEstimate,int sumOfOriginalEstimate) {
 		super();
 		this.projectId = projectId;
 		this.projectName = projectName;
@@ -73,6 +91,8 @@ public class ProjectInfoDto {
 		this.projectStartDate = projectStartDate;
 		this.projectEndDate = projectEndDate;
 		this.sprintInfo = dtos;
+		this.sumOfAiEstimate = sumOfAiEstimate;
+		this.sumOfOriginalEstimate = sumOfOriginalEstimate;
 	}
 
 	public ProjectInfoDto() {

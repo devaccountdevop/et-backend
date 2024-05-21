@@ -372,7 +372,7 @@ public class JIRARestService {
 						taskEstimates.setTaskId(issueId);
 						ImportTask taskInfo = new ImportTask(SprintId, issueName, issueId, issueDescription, aiEstimate,
 								0, labelsList, taskEstimates, storyPoints, originalEstimate, priority, assigne,
-								createdDate,taskStatus, worklogs);
+								createdDate,taskStatus, worklogs ,"0","0");
 						taskInfoList.add(taskInfo);
 					}
 
@@ -496,9 +496,9 @@ public class JIRARestService {
 						? descriptionElement.getAsString()
 						: null;
 				JsonElement customFieldElement = fields.get(customFieldInJira);
-				int aiEstimate = (customFieldElement != null && !customFieldElement.isJsonNull())
-						? Integer.parseInt(customFieldElement.getAsString())
-						: 0;
+				String aiEstimate = (customFieldElement != null && !customFieldElement.isJsonNull())
+						? customFieldElement.getAsString()
+						: "0";
 
 				JsonArray labelArray = fields.getAsJsonArray("labels");
 				List<String> labels = new ArrayList<>();
