@@ -43,6 +43,11 @@ public class AiEstimatesServiceImpl implements AiEstimatesService {
 
 	@Value("${AI.response.field.riskFactor}")
 	private String riskFactor;
+	
+	@Value("${AI.response.field.replaced}")
+	private String replaced;
+	
+	
 
 	@Autowired
 	private EstimatesService estimateService;
@@ -75,10 +80,14 @@ public class AiEstimatesServiceImpl implements AiEstimatesService {
 		JsonElement riskFactorValue = jsonObject.get(riskFactor);
 		String riskFactor = (riskFactorValue != null && !riskFactorValue.isJsonNull()) ? riskFactorValue.getAsString()
 				: null;
+		JsonElement replacedValue = jsonObject.get(replaced);
+		String replaced = (replacedValue != null && !replacedValue.isJsonNull()) ? replacedValue.getAsString()
+				: null;
 		AiResponseDto responseDto = new AiResponseDto();
 		responseDto.setAiEstimate(aiEstimate);
 		responseDto.setRiskFactor(riskFactor);
 		responseDto.setThreePointEstimate(threePointEstimate);
+		responseDto.setReplaced(replaced);
 		return responseDto;
 	}
 
@@ -150,6 +159,7 @@ public class AiEstimatesServiceImpl implements AiEstimatesService {
 
 		importTask.setRiskFactor(aiResponseDto.getRiskFactor());
 		importTask.setThreePointEstimate(aiResponseDto.getThreePointEstimate());
+		importTask.setReplaced(aiResponseDto.getReplaced());
 		return importTask;
 
 	}

@@ -179,7 +179,7 @@ public class ImportTaskServiceImpl implements ImportTaskService {
 	                existingTask.setStoryPoints(importTask.getStoryPoints());
 	                existingTask.setAssignee(importTask.getAssignee());
 	                existingTask.setCreationDate(importTask.getCreationDate());
-	                
+	                existingTask.setTaskStatus(importTask.getTaskStatus());
 //	                
 //	                List<Worklog> updatedWorklogs = new ArrayList<>();
 //	                for (Worklog worklog : existingTask.getWorklogs()) {
@@ -207,10 +207,12 @@ public class ImportTaskServiceImpl implements ImportTaskService {
 	               
 	            } else {
 	             
-	            	for (Worklog worklog : importTask.getWorklogs()) {
-	                    worklog.setImportTask(importTask);
-	                }
-	                importTask.setWorklogs(importTask.getWorklogs());
+	            	if(importTask.getWorklogs() != null && !importTask.getWorklogs().isEmpty()) {
+	            		for (Worklog worklog : importTask.getWorklogs()) {
+		                    worklog.setImportTask(importTask);
+		                }
+	            	}	                
+	            	importTask.setWorklogs(importTask.getWorklogs());
 	                tasksToSave.add(importTask);
 	            }
 	        }
