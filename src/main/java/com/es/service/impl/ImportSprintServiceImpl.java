@@ -66,6 +66,8 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 		Iterator<Row> iterator = sheet.iterator();
 		if (iterator.hasNext()) {
 			iterator.next();
+			iterator.next();
+			iterator.next();
 		}
 
 		while (iterator.hasNext()) {
@@ -95,7 +97,7 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 
 	private List<String> getHeaderRowData(Sheet sheet) {
 		List<String> headerRowData = new ArrayList<>();
-		Row headerRow = sheet.getRow(0);
+		Row headerRow = sheet.getRow(2);
 		if (headerRow != null) {
 			for (Cell cell : headerRow) {
 				headerRowData.add(cell.getStringCellValue());

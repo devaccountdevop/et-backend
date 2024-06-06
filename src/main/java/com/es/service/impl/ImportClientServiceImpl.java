@@ -56,6 +56,8 @@ public class ImportClientServiceImpl implements ImportClientService {
 	    Iterator<Row> iterator = sheet.iterator();
 	    if (iterator.hasNext()) {
 	        iterator.next(); // Skip the first row
+	        iterator.next();
+	        iterator.next();
 	    }
 
 	    while (iterator.hasNext()) {
@@ -87,7 +89,7 @@ public class ImportClientServiceImpl implements ImportClientService {
 
 	private List<String> getHeaderRowData(Sheet sheet) {
 	    List<String> headerRowData = new ArrayList<>();
-	    Row headerRow = sheet.getRow(0);
+	    Row headerRow = sheet.getRow(2);
 
 	    if (headerRow != null) {
 	        for (Cell cell : headerRow) {

@@ -335,5 +335,21 @@ public class ImportTask {
 		this.threePointEstimate = threePointEstimate;
 		this.riskFactor = riskFactor;
 	}
+	public ImportTask(int sprintId, String summary, String taskId, String taskType, String taskPriority,
+			String taskStatus, List<String> taskLabels, String taskDescription, TaskEstimates estimates,String aiEstimate, int originalEstimate) {
+		super();
+
+		this.sprintId = sprintId;
+		this.summary = summary;
+		this.taskId = taskId;
+		this.taskType = taskType;
+		this.taskPriority = taskPriority;
+		this.taskStatus = taskStatus;
+		this.labels = taskLabels;
+		this.taskDescription = taskDescription;
+		this.estimates = estimates;
+		this.aiEstimate = aiEstimate;
+		this.originalEstimate = originalEstimate;
+	}
 
 }

@@ -60,6 +60,8 @@ public class ImportTaskServiceImpl implements ImportTaskService {
 		Iterator<Row> iterator = sheet.iterator();
 		if (iterator.hasNext()) {
 			iterator.next(); // Skip the first row
+			iterator.next();
+			iterator.next();
 		}
 
 		while (iterator.hasNext()) {
@@ -91,7 +93,7 @@ public class ImportTaskServiceImpl implements ImportTaskService {
 
 	private List<String> getHeaderRowData(Sheet sheet) {
 		List<String> headerRowData = new ArrayList<>();
-		Row headerRow = sheet.getRow(0);
+		Row headerRow = sheet.getRow(2);
 		if (headerRow != null) {
 			for (Cell cell : headerRow) {
 				headerRowData.add(cell.getStringCellValue());
@@ -101,7 +103,14 @@ public class ImportTaskServiceImpl implements ImportTaskService {
 		return headerRowData;
 	}
 
-	private ImportTask createTaskList(List<String> rowData) {
+private ImportTask createTaskList(List<String> rowData) {
+		
+		// Initialize default values
+	    int originalEstimate = 0;
+	    int optimisticEstimate = 0;
+	    int pessimisticEstimate = 0;
+	    int realisticEstimate = 0;
+	    
 	    int value3 = 0; // Default value if rowData.get(6) is null// sprintId
 	    String value5 = rowData.get(8); // summary
 	    String value6 = rowData.get(9); // task id
@@ -109,13 +118,70 @@ public class ImportTaskServiceImpl implements ImportTaskService {
 	    String value8 = rowData.get(12); // task priority
 	    String value9 = rowData.get(11); // task status
 	    List<String> value10 = new ArrayList<>(); // labels
-	    String value11 = rowData.get(15); // task description
-	    String value12 = rowData.get(16);
+	    String value11 = rowData.get(16); // task description
+	    String value12 = rowData.get(17);
+	    String value13 = rowData.get(13);//original estimate
+//	    String value18 = rowData.get(18);//optimistic
+//	    optimisticEstimate = Integer.parseInt(value18);
+//	    String value19 = rowData.get(19);//pessimistic
+//	    pessimisticEstimate = Integer.parseInt(value19);
+//	    String value20 = rowData.get(20);//realistic
+//	    realisticEstimate = Integer.parseInt(value20);
+//	    int originalEstimate = Integer.parseInt(value13);
+	    
+	    //String value13 = rowData.get(13);
+	    if (value13 != null && !value13.isEmpty()) {
+	        try {
+	            originalEstimate = Integer.parseInt(value13);
+	        } catch (NumberFormatException e) {
+	            // Handle invalid number format
+	            System.err.println("Invalid original estimate: " + value13);
+	        }
+	    }
+	    
+	    
+	    String value18 = rowData.get(18);
+	    if (value18 != null && !value18.isEmpty()) {
+	        try {
+	            optimisticEstimate = Integer.parseInt(value18);
+	        } catch (NumberFormatException e) {
+	            // Handle invalid number format
+	            System.err.println("Invalid optimistic estimate: " + value18);
+	        }
+	    }
+
+	    // Parse pessimistic estimate
+	    String value19 = rowData.get(19);
+	    if (value19 != null && !value19.isEmpty()) {
+	        try {
+	            pessimisticEstimate = Integer.parseInt(value19);
+	        } catch (NumberFormatException e) {
+	            // Handle invalid number format
+	            System.err.println("Invalid pessimistic estimate: " + value19);
+	        }
+	    }
+
+	    // Parse realistic estimate
+	    String value20 = rowData.get(20);
+	    if (value20 != null && !value20.isEmpty()) {
+	        try {
+	            realisticEstimate = Integer.parseInt(value20);
+	        } catch (NumberFormatException e) {
+	            // Handle invalid number format
+	            System.err.println("Invalid realistic estimate: " + value20);
+	        }
+	    }
+	    
+	    
    TaskEstimates estimates  = new TaskEstimates();
    estimates.setTaskId(value6);
+   estimates.setLow(optimisticEstimate);
+   estimates.setHigh(pessimisticEstimate);
+   estimates.setRealistic(realisticEstimate);
    
-	    if (rowData.size() > 14) {
-	        String labelsString = rowData.get(14);
+   
+	    if (rowData.size() > 15) {
+	        String labelsString = rowData.get(15);
 	        if (labelsString != null && !labelsString.isEmpty()) {
 	            // Assuming labels are comma-separated in the Excel cell
 	            value10.addAll(Arrays.asList(labelsString.split(",")));
@@ -131,7 +197,7 @@ public class ImportTaskServiceImpl implements ImportTaskService {
 	        }
 	    }
 
-	    return new ImportTask(value3, value5, value6, value7, value8, value9, value10, value11, estimates, value12);
+	    return new ImportTask(value3, value5, value6, value7, value8, value9, value10, value11, estimates, value12, originalEstimate);
 	}
 
 
