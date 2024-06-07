@@ -25,7 +25,7 @@ public class DownloadTemplateController {
 	@GetMapping("/downloadtemplate")
 	public DownloadTemplateResponse downloadExcelTemplate() throws IOException {
 
-		InputStream inputStream = new ClassPathResource("templates/template.xlsx").getInputStream();
+		InputStream inputStream = new ClassPathResource("templates/jira_estimation_template.xlsx").getInputStream();
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=template.xlsx");
