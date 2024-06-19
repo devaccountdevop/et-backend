@@ -13,7 +13,7 @@ import com.es.entity.ImportProjects;
 public interface ImportProjectsRepository extends JpaRepository<ImportProjects, Integer> {
 	
 	 public List<ImportProjects> findByJiraUserName(String jiraUserName);
-	 
+	 List< ImportProjects> findByUserId(Integer userId);
 	 ImportProjects findByProjectId(int projectId);
 	 List<ImportProjects> findByProjectIdIn(Set<Integer> projectIds);
 	//public  List<ImportProjects> findAllProjectByUserName(String jiraUserName);

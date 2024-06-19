@@ -84,7 +84,7 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 //		return invList;
 //	
 //	}
-	public List<ImportProjects> getProjectDataAsList(InputStream inputStream) {
+	public List<ImportProjects> getProjectDataAsList(InputStream inputStream, int userId) {
 		List<ImportProjects> invList = new ArrayList<>();
 		DataFormatter dataFormatter = new DataFormatter();
 		try {
@@ -116,7 +116,7 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 
 			// Check if all values in the current row are blank before adding to the list
 			if (!rowData.isEmpty() && rowData.stream().anyMatch(value -> value != null)) {
-				ImportProjects credentials = createProjectList(rowData);
+				ImportProjects credentials = createProjectList(rowData, userId);
 				invList.add(credentials);
 			}
 		}
@@ -143,7 +143,7 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 		return headerRowData;
 	}
 
-	private ImportProjects createProjectList(List<String> rowData) {
+	private ImportProjects createProjectList(List<String> rowData, int userId) {
 		String value3 = rowData.get(3);
 
 		Integer value4 = null;
@@ -160,7 +160,7 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 
 		int intValue4 = (value4 != null) ? value4.intValue() : 0;
 
-		return new ImportProjects(intValue4, value5, value3);
+		return new ImportProjects(intValue4, value5, value3, userId);
 	}
 
 	@Override
@@ -182,8 +182,7 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 		List<ImportProjects> projectsToSave = new ArrayList<>();
 		List<ImportProjects> updatedProject = new ArrayList<>();
 		for (ImportProjects project : uniqueProjects) {
-			if (project != null && project.getJiraUserName() != null && !project.getJiraUserName().isEmpty()
-					&& project.getProjectId() > 0 && project.getProjectName() != null
+			if (project != null && project.getProjectId() > 0 && project.getProjectName() != null
 					&& !project.getProjectName().isEmpty()) {
 
 				ImportProjects existingProject = existingProjectsMap.get(project.getProjectId());
@@ -346,15 +345,98 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 	}
 
 	private boolean isValidProject(ImportProjects project) {
-		return project != null && project.getProjectId() > 0 && project.getJiraUserName() != null
-				&& !project.getJiraUserName().isEmpty() && project.getProjectName() != null
+		return project != null && project.getProjectId() > 0  && project.getProjectName() != null
 				&& !project.getProjectName().isEmpty();
 	}
 
 	private String generateProjectKey(ImportProjects project) {
 		// Create a composite key using projectId, projectName, and jiraUserName
-		return project.getProjectId() + "-" + project.getProjectName() + "-" + project.getJiraUserName();
+		return project.getProjectId() + "-" + project.getProjectName() ;
 	}
+
+	@Override
+	public List<ProjectInfoDto> getProjectsByUserId(Integer userId) {
+		
+		 List<ImportProjects> importProjects = importProjectsRepository.findByUserId(userId);
+		 
+		 List<ImportProjects> projectsWithOutClient = importProjects.stream()
+			        .filter(project -> project.getJiraUserName() == null || project.getJiraUserName().isEmpty())
+			        .collect(Collectors.toList());
+		    List<ProjectInfoDto> projectInfoDtoList = new ArrayList<>();
+
+		    for (ImportProjects project : projectsWithOutClient) {
+		    	
+//		        List<ImportSprint> importSprints = importSprintRepository.findAllSprintByProjectId(project.getProjectId());
+		        List<SprintInfoDto> importSprints = importSprintService.getAllSprintByProjectId(project.getProjectId());
+		        String projectStartDate = null;
+		        String projectEndDate = null;
+		        List<ProjectGraphDto> projectGraphDto = new ArrayList();
+		      
+		        int sumOriginalEstimate = 0;
+		        double sumAiEstimate = 0.0;
+		        if (importSprints != null && !importSprints.isEmpty()) {
+		            // If there are sprints for this project, find project start and end dates
+		            projectStartDate = importSprints.get(0).getStartDate();
+		            projectEndDate = importSprints.get(0).getEndDate();
+		            
+		           
+			        
+		            for (SprintInfoDto sprint : importSprints) {
+		            	if(projectStartDate == null && projectEndDate == null) {
+		            		projectStartDate = sprint.getStartDate();
+		            		 projectEndDate = sprint.getEndDate();
+		            	}
+		            	ProjectGraphDto graphDto = new ProjectGraphDto();
+		            	
+		            	graphDto.setTaskDetails(importTaskService.getAllTaskBySprintId(sprint.getSprintId()));
+		            	 sumOriginalEstimate += sprint.getSumOfOriginalEstimate();
+		            	String aiEstimateString = sprint.getSumOfAiEstimate();
+			            if (aiEstimateString != null && !aiEstimateString.isEmpty()) {
+			                if (aiEstimateString.contains(".")) {
+			                    double aiEstimateDouble = Double.parseDouble(aiEstimateString);
+			                    sumAiEstimate += aiEstimateDouble;
+			                } else {
+			                    int aiEstimateInt = Integer.parseInt(aiEstimateString);
+			                    sumAiEstimate += aiEstimateInt;
+			                }
+			            } else {
+			                sumAiEstimate += 0;
+			            }
+			        
+		 
+			       
+			       
+		            	graphDto.setEndDate(sprint.getEndDate());
+		            	graphDto.setProjectId(sprint.getProjectId());
+		            	graphDto.setSprintId(sprint.getSprintId());
+		            	graphDto.setSprintName(sprint.getSprintName());
+		            	graphDto.setStartDate(sprint.getStartDate());
+		                String sprintStartDate = sprint.getStartDate();
+		                String sprintEndDate = sprint.getEndDate();
+		                projectGraphDto.add(graphDto);
+		                // Update project start date if needed
+		                if (sprintStartDate != null && projectStartDate != null &&
+		                        sprintStartDate.compareTo(projectStartDate) < 0) {
+		                    projectStartDate = sprintStartDate;
+		                }
+
+		                // Update project end date if needed
+		                if (sprintEndDate != null && projectEndDate != null &&
+		                        sprintEndDate.compareTo(projectEndDate) > 0) {
+		                    projectEndDate = sprintEndDate;
+		                }
+		            }
+		            
+		        }
+
+		        // Create ProjectInfoDto regardless of whether sprints exist or not
+		        ProjectInfoDto projectInfoDto = new ProjectInfoDto(project.getProjectId(), project.getProjectName(), project.getJiraUserName(), projectStartDate, projectEndDate, projectGraphDto, String.valueOf(sumAiEstimate), sumOriginalEstimate);
+		        projectInfoDtoList.add(projectInfoDto);
+		    }
+
+		    return projectInfoDtoList;
+		}	
+
 
 	
 

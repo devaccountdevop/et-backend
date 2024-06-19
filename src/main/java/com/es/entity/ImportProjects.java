@@ -17,6 +17,15 @@ public class ImportProjects {
 		private int projectId;
 		private String projectName;
 		private String jiraUserName;
+		private int userId;
+		
+		
+		public int getUserId() {
+			return userId;
+		}
+		public void setUserId(int userId) {
+			this.userId = userId;
+		}
 		public Integer getId() {
 			return id;
 		}
@@ -49,6 +58,13 @@ public class ImportProjects {
 		}
 		public ImportProjects() {
 			
+		}
+		public ImportProjects(int projectId, String projectName, String jiraUserName, int userId) {
+			super();
+			this.projectId = projectId;
+			this.projectName = projectName;
+			this.jiraUserName = jiraUserName;
+			this.userId = userId;
 		}
 		
 		
