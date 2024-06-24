@@ -18,5 +18,7 @@ public interface ImportTaskService {
 
 	ImportTask updateTasks(ImportTask importTask);
 	List<ImportTask > getAllTaskBySprintId(int sprintId);
+	
+	 List<ImportTask> getAllBacklogTask(int projectId);
 
 }

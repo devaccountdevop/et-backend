@@ -1,6 +1,7 @@
 package com.es.controller;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,8 +11,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.es.dto.SprintListPageDto;
 import com.es.entity.ImportTask;
+import com.es.response.ExceptionEnum;
 import com.es.response.GetSprintResponse;
 import com.es.response.SprintListPageResponse;
+import com.es.response.SuccessEnum;
 import com.es.service.ImportTaskService;
 import com.es.service.JIRARestService;
 
@@ -38,6 +41,26 @@ public class SprintListPageController {
 			return response;
 		}
 
+	}
+	
+	@GetMapping("getprojectbacklog/{projectId}")
+	public SprintListPageResponse getAllBacklogTask(@PathVariable String projectId) {
+		SprintListPageResponse  response = new SprintListPageResponse();
+		if(projectId == null ) {
+			return response;
+		}
+		List<ImportTask> backlogTask = this.importTaskService.getAllBacklogTask(Integer.parseInt(projectId));
+		if(backlogTask.isEmpty()) {
+			response.setCode(ExceptionEnum.DATA_NOT_FOUND.getErrorCode());
+			response.setMessage(ExceptionEnum.DATA_NOT_FOUND.getMessage());
+			response.setData(backlogTask);
+			return response;
+		}
+		response.setCode(SuccessEnum.SUCCESS_TYPE.getCode());
+		response.setMessage(SuccessEnum.SUCCESS_TYPE.getMessage());
+		response.setData(backlogTask);
+		return response;
+		
 	}
 
 }

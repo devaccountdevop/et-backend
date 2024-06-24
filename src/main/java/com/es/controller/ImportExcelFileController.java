@@ -48,73 +48,161 @@ public class ImportExcelFileController {
 	@Autowired
 	ClientCredentialsService clientCredentialsService;
 
+//	@PostMapping(value = "/uploadFile/{Id}", consumes = "multipart/form-data")
+//	@Transactional
+//	public ImportExcelFileResponse fileUpload(@RequestParam("file") MultipartFile file, @PathVariable String Id) {
+//		ImportExcelFileResponse response = new ImportExcelFileResponse();
+//		if (!isExcelFile(file)) {
+//			// String message = "Invalid file format. Only .xlsx files are allowed";
+//			response.setCode(ExceptionEnum.DATA_NOT_FOUND.getErrorCode());
+//			response.setMessage("Invalid file format. Only .xlsx files are allowed.");
+//			return response;
+//		}
+//
+//		try {
+//			List<ClientCredentials> clientList = excelservice.getClientDataAsList(file.getInputStream(),
+//					Integer.parseInt(Id));
+//
+//			if (clientList.isEmpty()) {
+//				response.setCode(ExceptionEnum.DATA_NOT_FOUND.getErrorCode());
+//				response.setMessage("No client data to save.");
+//				return response;
+//			}
+//
+//			int noOfClientRecords = excelservice.saveClientData(clientList);
+//
+//			if (noOfClientRecords == 0) {
+//				response.setCode(ExceptionEnum.UNIVERSAL_ERROR.getErrorCode());
+//				response.setMessage("Error saving client records.");
+//				return response;
+//			}
+//
+//			List<ImportProjects> projectList = importProjectsService.getProjectDataAsList(file.getInputStream());
+//			List<ImportSprint> sprintList = importSprintService.getSprintDataAsList(file.getInputStream());
+//			List<ImportTask> taskList = importTaskService.getTaskDataAsList(file.getInputStream());
+//
+//			int noOfTaskRecords = importTaskService.saveTaskData(taskList);
+//
+//			if (noOfTaskRecords == 0) {
+//				response.setCode(ExceptionEnum.UNIVERSAL_ERROR.getErrorCode());
+//				response.setMessage("Error saving task records.");
+//				return response;
+//			}
+//
+//			if (projectList.isEmpty()) {
+//				response.setCode(ExceptionEnum.UNIVERSAL_ERROR.getErrorCode());
+//				response.setMessage("No project data to save.");
+//				return response;
+//			}
+//
+//			List<ImportProjects> noOfProjectUpdated = importProjectsService.saveProjectData(projectList);
+//			int noOfSprintRecords = importSprintService.saveSprintData(sprintList);
+//// 
+////	        if (noOfProjectRecords == 0) {
+////                response.setCode(ExceptionEnum.UNIVERSAL_ERROR.getErrorCode());
+////                response.setMessage("Error saving project records.");
+////                return response;
+////            }
+//// 
+//			response.setData(noOfProjectUpdated);
+//			response.setCode(SuccessEnum.SUCCESS_TYPE.getCode());
+//			response.setMessage("File uploaded successfully.");
+//
+//			return response;
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//			response.setCode(ExceptionEnum.UNIVERSAL_ERROR.getErrorCode());
+//			response.setMessage("Error processing the file.");
+//			return response;
+//		}
+//	}
 	@PostMapping(value = "/uploadFile/{Id}", consumes = "multipart/form-data")
 	@Transactional
 	public ImportExcelFileResponse fileUpload(@RequestParam("file") MultipartFile file, @PathVariable String Id) {
-		ImportExcelFileResponse response = new ImportExcelFileResponse();
-		if (!isExcelFile(file)) {
-			// String message = "Invalid file format. Only .xlsx files are allowed";
-			response.setCode(ExceptionEnum.DATA_NOT_FOUND.getErrorCode());
-			response.setMessage("Invalid file format. Only .xlsx files are allowed.");
-			return response;
-		}
+	    ImportExcelFileResponse response = new ImportExcelFileResponse();
+	    if (!isExcelFile(file)) {
+	        response.setCode(ExceptionEnum.DATA_NOT_FOUND.getErrorCode());
+	        response.setMessage("Invalid file format. Only .xlsx files are allowed.");
+	        return response;
+	    }
 
-		try {
-			List<ClientCredentials> clientList = excelservice.getClientDataAsList(file.getInputStream(),
-					Integer.parseInt(Id));
+	    try {
+	        // Initialize a message buffer to collect messages for the response
+	        StringBuilder message = new StringBuilder();
+	        boolean hasError = false;
 
-			if (clientList.isEmpty()) {
-				response.setCode(ExceptionEnum.DATA_NOT_FOUND.getErrorCode());
-				response.setMessage("No client data to save.");
-				return response;
-			}
+	        // Process client data
+	        List<ClientCredentials> clientList = excelservice.getClientDataAsList(file.getInputStream(), Integer.parseInt(Id));
+	        if (!clientList.isEmpty()) {
+	            int noOfClientRecords = excelservice.saveClientData(clientList);
+	            if (noOfClientRecords == 0) {
+	                hasError = true;
+	                message.append("Error saving client records. ");
+	            } else {
+	                message.append("Client records saved successfully. ");
+	            }
+	        } else {
+	            message.append("No client data to save. ");
+	        }
 
-			int noOfClientRecords = excelservice.saveClientData(clientList);
+	        // Process project data
+	        List<ImportProjects> projectList = importProjectsService.getProjectDataAsList(file.getInputStream(), Integer.parseInt(Id));
+	        if (!projectList.isEmpty()) {
+	            List<ImportProjects> noOfProjectUpdated = importProjectsService.saveProjectData(projectList);
+	               if(noOfProjectUpdated.equals(projectList)) {
+	            	   message.append("Error saving project records. ");
+	               }else {
+	            	   message.append("Project records saved successfully. ");
+		                response.setData(noOfProjectUpdated);
+	               }
+	            
+	        } else {
+	            message.append("No project data to save. ");
+	        }
 
-			if (noOfClientRecords == 0) {
-				response.setCode(ExceptionEnum.UNIVERSAL_ERROR.getErrorCode());
-				response.setMessage("Error saving client records.");
-				return response;
-			}
+	        // Process sprint data
+	        List<ImportSprint> sprintList = importSprintService.getSprintDataAsList(file.getInputStream());
+	        if (!sprintList.isEmpty()) {
+	            int noOfSprintRecords = importSprintService.saveSprintData(sprintList);
+	            if (noOfSprintRecords == 0) {
+	                hasError = true;
+	                message.append("Error saving sprint records. ");
+	            } else {
+	                message.append("Sprint records saved successfully. ");
+	            }
+	        } else {
+	            message.append("No sprint data to save. ");
+	        }
 
-			List<ImportProjects> projectList = importProjectsService.getProjectDataAsList(file.getInputStream());
-			List<ImportSprint> sprintList = importSprintService.getSprintDataAsList(file.getInputStream());
-			List<ImportTask> taskList = importTaskService.getTaskDataAsList(file.getInputStream());
+	        // Process task data
+	        List<ImportTask> taskList = importTaskService.getTaskDataAsList(file.getInputStream());
+	        if (!taskList.isEmpty()) {
+	            int noOfTaskRecords = importTaskService.saveTaskData(taskList);
+	            if (noOfTaskRecords == 0) {
+	                hasError = true;
+	                message.append("Error saving task records. ");
+	            } else {
+	                message.append("Task records saved successfully. ");
+	            }
+	        } else {
+	            message.append("No task data to save. ");
+	        }
 
-			int noOfTaskRecords = importTaskService.saveTaskData(taskList);
+	        // Set the final response code and message
+	        if (hasError) {
+	            response.setCode(ExceptionEnum.UNIVERSAL_ERROR.getErrorCode());
+	        } else {
+	            response.setCode(SuccessEnum.SUCCESS_TYPE.getCode());
+	        }
+	        response.setMessage(message.toString());
 
-			if (noOfTaskRecords == 0) {
-				response.setCode(ExceptionEnum.UNIVERSAL_ERROR.getErrorCode());
-				response.setMessage("Error saving task records.");
-				return response;
-			}
-
-			if (projectList.isEmpty()) {
-				response.setCode(ExceptionEnum.UNIVERSAL_ERROR.getErrorCode());
-				response.setMessage("No project data to save.");
-				return response;
-			}
-
-			List<ImportProjects> noOfProjectUpdated = importProjectsService.saveProjectData(projectList);
-			int noOfSprintRecords = importSprintService.saveSprintData(sprintList);
-// 
-//	        if (noOfProjectRecords == 0) {
-//                response.setCode(ExceptionEnum.UNIVERSAL_ERROR.getErrorCode());
-//                response.setMessage("Error saving project records.");
-//                return response;
-//            }
-// 
-			response.setData(noOfProjectUpdated);
-			response.setCode(SuccessEnum.SUCCESS_TYPE.getCode());
-			response.setMessage("File uploaded successfully.");
-
-			return response;
-		} catch (IOException e) {
-			e.printStackTrace();
-			response.setCode(ExceptionEnum.UNIVERSAL_ERROR.getErrorCode());
-			response.setMessage("Error processing the file.");
-			return response;
-		}
+	        return response;
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	        response.setCode(ExceptionEnum.UNIVERSAL_ERROR.getErrorCode());
+	        response.setMessage("Error processing the file.");
+	        return response;
+	    }
 	}
 
 	private boolean isExcelFile(MultipartFile file) {

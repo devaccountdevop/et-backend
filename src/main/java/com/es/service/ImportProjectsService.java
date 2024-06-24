@@ -10,7 +10,7 @@ import com.es.entity.ImportProjects;
 
 public interface ImportProjectsService {
 	
-	List<ImportProjects> getProjectDataAsList(InputStream inputStream);
+	List<ImportProjects> getProjectDataAsList(InputStream inputStream , int userId);
 	
 	List<ImportProjects> saveProjectData(List<ImportProjects> projects);
     
@@ -20,9 +20,10 @@ public interface ImportProjectsService {
 	//ClientCredentials getClientCredentialsByUserId(int id);
 //	void deleteProjects(int userId);
 	List<ProjectInfoDto> getProjectsByJiraUserName(String jiraUserName);
+	List<ProjectInfoDto> getProjectsByUserId(Integer userId);
 //	public ClientCredentials updateClientCredentialsByUserId(ClientCredentials clientCredentials);
 	List<ImportProjects> saveProjectList(List<ImportProjects> importProjects);
-
+  
 	List<String> modifiedProjectsName(List<String> projectList);
 		
 }

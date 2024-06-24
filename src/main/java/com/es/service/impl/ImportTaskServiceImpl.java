@@ -112,6 +112,8 @@ private ImportTask createTaskList(List<String> rowData) {
 	    int realisticEstimate = 0;
 	    
 	    int value3 = 0; // Default value if rowData.get(6) is null// sprintId
+	    String projectId = rowData.get(4);
+	    
 	    String value5 = rowData.get(8); // summary
 	    String value6 = rowData.get(9); // task id
 	    String value7 = rowData.get(10); // task type
@@ -197,7 +199,7 @@ private ImportTask createTaskList(List<String> rowData) {
 	        }
 	    }
 
-	    return new ImportTask(value3, value5, value6, value7, value8, value9, value10, value11, estimates, value12, originalEstimate);
+	    return new ImportTask(value3, value5, value6, value7, value8, value9, value10, value11, estimates, value12, originalEstimate, Integer.parseInt(projectId));
 	}
 
 
@@ -216,21 +218,21 @@ private ImportTask createTaskList(List<String> rowData) {
 	                    .map(ImportTask::getTaskId)
 	                    .collect(Collectors.toSet()),
 	            uniqueTasks.stream()
-	                    .filter(task -> task != null && task.getSprintId() != 0)
-	                    .map(ImportTask::getSprintId)
+	                    .filter(task -> task != null && task.getProjectId() != 0)
+	                    .map(ImportTask::getProjectId)
 	                    .collect(Collectors.toSet()));
 
 	    Map<String, ImportTask> existingTasksMap = existingTasks.stream()
-	            .collect(Collectors.toMap(task -> task.getTaskId() + "-" + task.getSprintId(), Function.identity()));
+	            .collect(Collectors.toMap(task -> task.getTaskId() + "-" + task.getProjectId(), Function.identity()));
 
 	    List<ImportTask> tasksToSave = new ArrayList<>();
 
 	    for (ImportTask importTask : uniqueTasks) {
 	        String taskId = importTask.getTaskId();
-	        int sprintId = importTask.getSprintId();
+	        int projectId = importTask.getProjectId();
 
-	        if (importTask != null && importTask.getSummary() != null && sprintId > 0) {
-	            String key = taskId + "-" + sprintId;
+	        if (importTask != null && importTask.getSummary() != null && projectId > 0) {
+	            String key = taskId + "-" + projectId;
 	            ImportTask existingTask = existingTasksMap.get(key);
 
 	            if (existingTask != null) {
@@ -246,6 +248,8 @@ private ImportTask createTaskList(List<String> rowData) {
 	                existingTask.setAssignee(importTask.getAssignee());
 	                existingTask.setCreationDate(importTask.getCreationDate());
 	                existingTask.setTaskStatus(importTask.getTaskStatus());
+	                existingTask.setProjectId(importTask.getProjectId());
+	                existingTask.setSprintId(importTask.getSprintId());
 //	                
 //	                List<Worklog> updatedWorklogs = new ArrayList<>();
 //	                for (Worklog worklog : existingTask.getWorklogs()) {
@@ -354,13 +358,22 @@ private ImportTask createTaskList(List<String> rowData) {
 	}
 
 	private boolean isValidProject(ImportTask tasks) {
-		return tasks != null && tasks.getSprintId() > 0 && tasks.getTaskId() != null
+		return tasks != null  && tasks.getTaskId() != null
 				&& !tasks.getTaskId().isEmpty() && tasks.getSummary() !=null && !tasks.getSummary().isEmpty() ;
 	}
 
 	private String generateProjectKey(ImportTask tasks) {
 		
-		return tasks.getSprintId() + "-" + tasks.getTaskId() ;
+		return tasks.getProjectId() + "-" + tasks.getTaskId() ;
+	}
+
+	@Override
+	public List<ImportTask> getAllBacklogTask(int projectId) {
+		if(projectId == 0) {
+			return null;
+		}	
+	List<ImportTask> backlogTask = this.taskRepository.findAllTasksByProjectId(projectId);
+		return backlogTask;
 	}
 	
 	

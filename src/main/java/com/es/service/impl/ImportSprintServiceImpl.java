@@ -303,8 +303,17 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 	                double totalThreePointEstimate = 0.0;																				
  
 	                for (ImportTask task : tasksForSprintAndDate) {
-	                    for (Worklog worklog : task.getWorklogs()) {
-	                        // Accumulate totalActualEstimate in seconds
+	                	
+	                	 String threePointString = task.getThreePointEstimate();
+	                        if (threePointString != null && !threePointString.isEmpty()) {
+	                            if (threePointString.contains(".")) {
+	                                double doubleThreePoint = Double.parseDouble(threePointString);
+	                                totalThreePointEstimate += doubleThreePoint;
+	                            } else {
+	                                int intThreePoint = Integer.parseInt(threePointString);
+	                                totalThreePointEstimate += intThreePoint;
+	                            }
+	                        }
 	                        totalActualEstimateInSeconds += task.getOriginalEstimate();
 	                        String aiEstimateString = task.getAiEstimate();
 	                        if (aiEstimateString != null && !aiEstimateString.isEmpty()) {
@@ -316,7 +325,10 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 	                                totalAiEstimate += aiEstimateInt;
 	                            }
 	                        }
-	                        totalRemaining += task.getOriginalEstimate() - worklog.getTimeSpentSeconds();
+
+	                    for (Worklog worklog : task.getWorklogs()) {
+	                        // Accumulate totalActualEstimate in seconds
+	                       	                        totalRemaining += task.getOriginalEstimate() - worklog.getTimeSpentSeconds();
 	                        String velocity = task.getStoryPoints();
 	                        if (velocity != null && !velocity.isEmpty()) {
 	                            if (velocity.contains(".")) {
@@ -337,16 +349,7 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 	                                totalRiskFactor += intRiskFactor;
 	                            }
 	                        }
-	                        String threePointString = task.getThreePointEstimate();
-	                        if (threePointString != null && !threePointString.isEmpty()) {
-	                            if (threePointString.contains(".")) {
-	                                double doubleThreePoint = Double.parseDouble(threePointString);
-	                                totalThreePointEstimate += doubleThreePoint;
-	                            } else {
-	                                int intThreePoint = Integer.parseInt(threePointString);
-	                                totalThreePointEstimate += intThreePoint;
-	                            }
-	                        }
+	                       
 	                    }
 	                }
  

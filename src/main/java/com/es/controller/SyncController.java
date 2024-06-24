@@ -65,11 +65,14 @@ public class SyncController {
 	            if (!projectInfoList.isEmpty()) {
 	                List<ImportSprint> allSprints = new ArrayList<>();
 	                List<ImportTask> allTasks = new ArrayList<>();
+	                List<ImportTask> allBacklogTasks = new ArrayList<>();
 
+	                		
 	                for (ImportProjects project : projectInfoList) {
 	                    List<ImportSprint> sprintInfoList = jiraRestService.getAllSprintsByProjectId(project.getProjectId(),
 	                            Integer.parseInt(clientId));
-
+	                    allTasks.addAll(jiraRestService.getAllBacklogTasks(project.getProjectId(), Integer.parseInt(clientId)));
+	                    
 	                    if (!sprintInfoList.isEmpty()) {
 	                        allSprints.addAll(sprintInfoList);
 
@@ -86,8 +89,11 @@ public class SyncController {
 						// Save all data to your database or perform any other necessary actions
 					  List<ImportProjects > updatedProject =	importProjectsService.saveProjectData(projectInfoList);
 						importSprintService.saveSprintData(allSprints);
+//						allTasks.addAll(allBacklogTasks);
 						importTaskService.saveTaskData(allTasks);
-			
+						if(!allBacklogTasks.isEmpty()) {
+							importTaskService.saveTaskData(allBacklogTasks);
+						}
 						response.setCode(HttpStatus.OK.value());
 						response.setData(updatedProject);
 						return response;
