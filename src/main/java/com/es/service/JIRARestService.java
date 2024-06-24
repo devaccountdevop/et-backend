@@ -372,7 +372,7 @@ public class JIRARestService {
 						taskEstimates.setTaskId(issueId);
 						ImportTask taskInfo = new ImportTask(SprintId, issueName, issueId, issueDescription, aiEstimate,
 								0, labelsList, taskEstimates, storyPoints, originalEstimate, priority, assigne,
-								createdDate,taskStatus, worklogs ,"0","0");
+								createdDate,taskStatus, worklogs ,"0","0",projectId);
 						taskInfoList.add(taskInfo);
 					}
 
@@ -457,70 +457,89 @@ public class JIRARestService {
 
 	}
 
-	public List<SprintListPageDto> getAllBacklogTasks(int projectId) {
-
-		{
-
-			String customFieldInJira;
-
-			customFieldInJira = getFieldId(field_Name);
-			if (customFieldInJira == null) {
-				customFieldInJira = createField(field_Name);
-			}
-			RestTemplate restTemplate = new RestTemplate();
-			HttpHeaders headers = new HttpHeaders();
-			headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-			headers.setBasicAuth(jira_username, jira_token);
-			HttpEntity<String> entity = new HttpEntity<>(headers);
-			// String jiraTasksEndpoint = jira_base_url + jira_get_project + "/sprint/" +
-			// SprintId + "/issue" ;
-			String jiraTasksEndpoint = jira_base_url + jira_get_project + "/" + projectId + "/backlog";
-			ResponseEntity<String> responseEntity = restTemplate.exchange(jiraTasksEndpoint, HttpMethod.GET, entity,
-					String.class);
-			String jsonResponse = responseEntity.getBody();
-			JsonParser jsonParser = new JsonParser();
-			JsonObject jsonObject = jsonParser.parse(jsonResponse).getAsJsonObject();
-
-			JsonArray issues = jsonObject.getAsJsonArray("issues");
-
-			List<SprintListPageDto> taskInfoList = new ArrayList<>();
-
-			for (int i = 0; i < issues.size(); i++) {
-				JsonObject issueObject = issues.get(i).getAsJsonObject();
-				String issueId = issueObject.get("key").getAsString();
-
-				JsonObject fields = issueObject.getAsJsonObject("fields");
-				String issueName = fields.get("summary").getAsString();
-				JsonElement descriptionElement = fields.get("description");
-				String issueDescription = (descriptionElement != null && !descriptionElement.isJsonNull())
-						? descriptionElement.getAsString()
-						: null;
-				JsonElement customFieldElement = fields.get(customFieldInJira);
-				String aiEstimate = (customFieldElement != null && !customFieldElement.isJsonNull())
-						? customFieldElement.getAsString()
-						: "0";
-
-				JsonArray labelArray = fields.getAsJsonArray("labels");
-				List<String> labels = new ArrayList<>();
-				if (labelArray != null) {
-					for (JsonElement labelElement : labelArray) {
-						labels.add(labelElement.getAsString());
-					}
-				}
-				TaskEstimates estimates = new TaskEstimates();
-				List<TaskEstimates> labels1 = new ArrayList<>();
-				// estimates = estimatesService.getEstimatesByTaskId(issueId);
-				labels1.add(estimates);
-				AiEstimatesDto aiEstimatesDto = new AiEstimatesDto();
-				// aiEstimatesDto = this.getAiEstimates(issueId);
-				// aiEstimatesDto.setAiestimates();
-				SprintListPageDto taskInfo = new SprintListPageDto(issueId, issueName, issueDescription, labels1,
-						labels, aiEstimate, 4);
-				taskInfoList.add(taskInfo);
-			}
-
-			return taskInfoList;
+	public List<ImportTask> getAllBacklogTasks(int projectId, int clientId) {
+	    ClientCredentials clientCredentials = clientCredentialsService.getClientCredentials(clientId);
+ 
+	    String originalEstimateFieldInJira = null;
+	    String storyPointsFieldInJira = null;
+	    
+	    if (clientCredentials != null) {
+	        originalEstimateFieldInJira = getFieldId(originalEstimates_field_Name);
+	        storyPointsFieldInJira = getFieldId(storyPoints_field_Name);
+	    }
+ 
+	    if (originalEstimateFieldInJira == null) {
+	        originalEstimateFieldInJira = createField(originalEstimates_field_Name);
+	    }
+ 
+	    if (storyPointsFieldInJira == null) {
+	        storyPointsFieldInJira = createField(storyPoints_field_Name);
+	    }
+	    String customFieldInJira;
+ 
+		customFieldInJira = getFieldId(field_Name);
+		if (customFieldInJira == null) {
+			customFieldInJira = createField(field_Name);
 		}
+	    RestTemplate restTemplate = new RestTemplate();
+	    HttpHeaders headers = new HttpHeaders();
+	    headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+	    headers.setBasicAuth(clientCredentials.getJiraUserName(), clientCredentials.getToken());
+	    HttpEntity<String> entity = new HttpEntity<>(headers);
+	    String jiraTasksEndpoint = jira_base_url + jira_get_project + "/" + projectId + "/backlog";
+	    ResponseEntity<String> responseEntity = restTemplate.exchange(jiraTasksEndpoint, HttpMethod.GET, entity, String.class);
+	    String jsonResponse = responseEntity.getBody();
+	    JsonParser jsonParser = new JsonParser();
+	    JsonObject jsonObject = jsonParser.parse(jsonResponse).getAsJsonObject();
+	    JsonArray issues = jsonObject.getAsJsonArray("issues");
+ 
+	    List<ImportTask> taskInfoList = new ArrayList<>();
+ 
+	    for (int i = 0; i < issues.size(); i++) {
+	        JsonObject issueObject = issues.get(i).getAsJsonObject();
+	        String issueId = issueObject.get("key").getAsString();
+ 
+	        JsonObject fields = issueObject.getAsJsonObject("fields");
+	        String issueName = fields.get("summary").getAsString();
+	        JsonElement descriptionElement = fields.get("description");
+			String issueDescription = (descriptionElement != null && !descriptionElement.isJsonNull())
+					? descriptionElement.getAsString()
+					: null;
+			JsonElement customFieldElement = fields.get(customFieldInJira);
+			String aiEstimate = (customFieldElement != null && !customFieldElement.isJsonNull())
+					? customFieldElement.getAsString()
+					: "0";
+ 
+			JsonElement storyPointsElement = fields.get(storyPointsFieldInJira);
+			String storyPoints = (storyPointsElement != null && !storyPointsElement.isJsonNull())
+					? storyPointsElement.getAsString()
+					: null;
+ 
+			JsonElement originalEstimateElement = fields.get(originalEstimateFieldInJira);
+			int originalEstimate = (originalEstimateElement != null
+					&& !originalEstimateElement.isJsonNull())
+							? Integer.parseInt(originalEstimateElement.getAsString())
+							: 0;
+	        String createdDate = fields.get("created").getAsString();
+	        
+	        List<String> labels = new ArrayList<>();
+	        JsonArray labelArray = fields.getAsJsonArray("labels");
+	        if (labelArray != null) {
+	            for (JsonElement labelElement : labelArray) {
+	                labels.add(labelElement.getAsString());
+	            }
+	        }
+	        
+	        TaskEstimates estimates = new TaskEstimates(); // You might need to initialize this properly
+	        // You have `labels1` here, but it's not being used, so I commented it out
+	        
+	        AiEstimatesDto aiEstimatesDto = new AiEstimatesDto(); // Similarly, this might need proper initialization
+	        
+	        ImportTask backlogTask = new ImportTask(issueName, projectId, issueId, issueDescription, estimates,aiEstimate, labels,  originalEstimate, storyPoints, createdDate);
+	        taskInfoList.add(backlogTask);
+	    }
+ 
+	    return taskInfoList;
 	}
 
 	public String getFieldId(String fieldName) {

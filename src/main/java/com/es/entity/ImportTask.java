@@ -42,7 +42,7 @@ public class ImportTask {
 	private int actual;
 	@ElementCollection
 	private List<String> labels;
-
+private int projectId;
 	private String riskFactor;
 	private int originalEstimate;
 	private String storyPoints;
@@ -55,6 +55,15 @@ public class ImportTask {
 	
 	
 	
+	
+	public int getProjectId() {
+		return projectId;
+	}
+
+	public void setProjectId(int projectId) {
+		this.projectId = projectId;
+	}
+
 	public String getReplaced() {
 		return replaced;
 	}
@@ -313,7 +322,7 @@ public class ImportTask {
 	}
 
 	public ImportTask(int sprintId, String summary, String taskId, String taskDescription, 
-			String aiEstimate, int actual, List<String> labels, TaskEstimates estimates, String storyPoints, int originalEstimate, String priority, String assignee, String creationDate, String taskStatus, List<Worklog> worklogs , String threePointEstimate,String riskFactor) {
+			String aiEstimate, int actual, List<String> labels, TaskEstimates estimates, String storyPoints, int originalEstimate, String priority, String assignee, String creationDate, String taskStatus, List<Worklog> worklogs , String threePointEstimate,String riskFactor,int projectId) {
 		super();
 		this.sprintId = sprintId;
 		this.summary = summary;
@@ -334,9 +343,10 @@ public class ImportTask {
 		this.worklogs = worklogs;
 		this.threePointEstimate = threePointEstimate;
 		this.riskFactor = riskFactor;
+		this.projectId = projectId;
 	}
 	public ImportTask(int sprintId, String summary, String taskId, String taskType, String taskPriority,
-			String taskStatus, List<String> taskLabels, String taskDescription, TaskEstimates estimates,String aiEstimate, int originalEstimate) {
+			String taskStatus, List<String> taskLabels, String taskDescription, TaskEstimates estimates,String aiEstimate, int originalEstimate,int projectId) {
 		super();
 
 		this.sprintId = sprintId;
@@ -350,6 +360,23 @@ public class ImportTask {
 		this.estimates = estimates;
 		this.aiEstimate = aiEstimate;
 		this.originalEstimate = originalEstimate;
+		this.projectId = projectId;
+	}
+	
+	public ImportTask(String summary, int projectId, String taskId, String taskDescription, TaskEstimates estimates,
+			 String aiEstimate, List<String> labels,  int originalEstimate,
+			String storyPoints, String creationDate) {
+		super();
+		this.summary = summary;
+		this.projectId = projectId;
+		this.taskId = taskId;
+		this.taskDescription = taskDescription;
+		this.estimates = estimates;
+		this.aiEstimate = aiEstimate;
+		this.labels = labels;
+		this.originalEstimate = originalEstimate;
+		this.storyPoints = storyPoints;
+		this.creationDate = creationDate;
 	}
 
 }
