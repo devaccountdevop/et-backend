@@ -25,5 +25,8 @@ public interface ImportProjectsService {
 	List<ImportProjects> saveProjectList(List<ImportProjects> importProjects);
   
 	List<String> modifiedProjectsName(List<String> projectList);
+
+	 ProjectInfoDto getProjectByProjectId(int projectId);
+	
 		
 }

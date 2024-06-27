@@ -435,7 +435,86 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 		    }
 
 		    return projectInfoDtoList;
-		}	
+		}
+
+	@Override
+	public ProjectInfoDto getProjectByProjectId(int projectId) {
+	    // Find the project by its ID
+	    ImportProjects downloadProject = importProjectsRepository.findByProjectId(projectId);
+ 
+	   
+ 
+	    // Retrieve sprints for the project
+	    List<SprintInfoDto> importSprints = importSprintService.getAllSprintByProjectId(downloadProject.getProjectId());
+ 
+	    String projectStartDate = null;
+	    String projectEndDate = null;
+	    List<ProjectGraphDto> projectGraphDto = new ArrayList<>();
+ 
+	    int sumOriginalEstimate = 0;
+	    double sumAiEstimate = 0.0;
+ 
+	    if (importSprints != null && !importSprints.isEmpty()) {
+	        projectStartDate = importSprints.get(0).getStartDate();
+	        projectEndDate = importSprints.get(0).getEndDate();
+ 
+	        for (SprintInfoDto sprint : importSprints) {
+	            if (projectStartDate == null && projectEndDate == null) {
+	                projectStartDate = sprint.getStartDate();
+	                projectEndDate = sprint.getEndDate();
+	            }
+ 
+	            ProjectGraphDto graphDto = new ProjectGraphDto();
+	            graphDto.setTaskDetails(importTaskService.getAllTaskBySprintId(sprint.getSprintId()));
+	            sumOriginalEstimate += sprint.getSumOfOriginalEstimate();
+ 
+	            String aiEstimateString = sprint.getSumOfAiEstimate();
+	            if (aiEstimateString != null && !aiEstimateString.isEmpty()) {
+	                if (aiEstimateString.contains(".")) {
+	                    double aiEstimateDouble = Double.parseDouble(aiEstimateString);
+	                    sumAiEstimate += aiEstimateDouble;
+	                } else {
+	                    int aiEstimateInt = Integer.parseInt(aiEstimateString);
+	                    sumAiEstimate += aiEstimateInt;
+	                }
+	            } else {
+	                sumAiEstimate += 0;
+	            }
+ 
+	            graphDto.setEndDate(sprint.getEndDate());
+	            graphDto.setProjectId(sprint.getProjectId());
+	            graphDto.setSprintId(sprint.getSprintId());
+	            graphDto.setSprintName(sprint.getSprintName());
+	            graphDto.setStartDate(sprint.getStartDate());
+	            String sprintStartDate = sprint.getStartDate();
+	            String sprintEndDate = sprint.getEndDate();
+	            projectGraphDto.add(graphDto);
+ 
+	            if (sprintStartDate != null && projectStartDate != null &&
+	                sprintStartDate.compareTo(projectStartDate) < 0) {
+	                projectStartDate = sprintStartDate;
+	            }
+ 
+	            if (sprintEndDate != null && projectEndDate != null &&
+	                sprintEndDate.compareTo(projectEndDate) > 0) {
+	                projectEndDate = sprintEndDate;
+	            }
+	        }
+	    }
+ 
+	    ProjectInfoDto projectInfoDto = new ProjectInfoDto(
+	    		downloadProject.getProjectId(),
+	    		downloadProject.getProjectName(),
+	    		downloadProject.getJiraUserName(),
+	        projectStartDate,
+	        projectEndDate,
+	        projectGraphDto,
+	        String.valueOf(sumAiEstimate),
+	        sumOriginalEstimate
+	    );
+ 
+	    return projectInfoDto;
+	}	
 
 
 	
