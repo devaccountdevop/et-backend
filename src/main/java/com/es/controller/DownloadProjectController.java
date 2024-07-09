@@ -36,12 +36,12 @@ public class DownloadProjectController {
 
 	    	if (projectId !=0 && sprintId.isEmpty()) { 
 	    		
-	    		 excelData = downloadExcelData.generateProjectData(projectId, clientId);
+	    		 excelData = downloadExcelData.generateProjectData(projectId, clientId, userId);
 	    	}else {
 	    		if(projectId !=0 && sprintId.equals("0")){
-	    			excelData = downloadExcelData.generateBacklogData(projectId, clientId);
+	    			excelData = downloadExcelData.generateBacklogData(projectId, clientId, userId);
 	    		}else {
-	    			excelData = downloadExcelData.generateSprintData(projectId, clientId, Integer.parseInt(sprintId));
+	    			excelData = downloadExcelData.generateSprintData(projectId, clientId, Integer.parseInt(sprintId), userId);
 	    		}
 	    		
 	    	}

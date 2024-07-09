@@ -11,7 +11,17 @@ public class ProjectGraphDto {
 	private String sprintName;
 	private String startDate;
 	private String endDate;
+	private int projectScope;
+	
 	private List<ImportTask> taskDetails;
+	
+	
+	public int getProjectScope() {
+		return projectScope;
+	}
+	public void setProjectScope(int projectScope) {
+		this.projectScope = projectScope;
+	}
 	public int getProjectId() {
 		return projectId;
 	}
@@ -49,7 +59,7 @@ public class ProjectGraphDto {
 		this.taskDetails = taskDetails;
 	}
 	public ProjectGraphDto(int projectId, int sprintId, String sprintName, String startDate, String endDate,
-			List<ImportTask> taskDetails) {
+			List<ImportTask> taskDetails, int projectScope) {
 		super();
 		this.projectId = projectId;
 		this.sprintId = sprintId;
@@ -57,6 +67,7 @@ public class ProjectGraphDto {
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.taskDetails = taskDetails;
+		this.projectScope = projectScope;
 	}
 	public ProjectGraphDto() {
 		super();

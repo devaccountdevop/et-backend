@@ -78,7 +78,7 @@ public class ProjectController {
         	ClientCredentials clientCredentials = new ClientCredentials();
         	 clientCredentials = clientCredentialsService.getClientCredentials(Integer.parseInt(clientId));
         	if(clientCredentials != null) {
-            list.addAll(importProjectsService.getProjectsByJiraUserName(clientCredentials.getJiraUserName()));
+            list.addAll(importProjectsService.getProjectsByJiraUserName(clientCredentials.getJiraUserName(), clientCredentials.getUserId()));
         	}
             if (list != null && !list.isEmpty()) {
                 response.setCode(200); // Use HttpStatus constants

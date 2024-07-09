@@ -5,8 +5,10 @@ import java.io.InputStream;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -43,6 +45,9 @@ import com.es.service.ImportSprintService;
 @Service
 public class ImportSprintServiceImpl implements ImportSprintService {
 
+	
+	 private static final DateTimeFormatter INPUT_FORMATTER = DateTimeFormatter.ofPattern("M/d/yy");
+	    private static final DateTimeFormatter OUTPUT_FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy");
 	@Autowired
 	ImportSprintRepository importSprintRepository;
 
@@ -51,7 +56,7 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 	Workbook workbook;
 
 	@Override
-	public List<ImportSprint> getSprintDataAsList(InputStream inputStream) {
+	public List<ImportSprint> getSprintDataAsList(InputStream inputStream , int userId) {
 		List<ImportSprint> invList = new ArrayList<>();
 		DataFormatter dataFormatter = new DataFormatter();
 		try {
@@ -81,7 +86,7 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 			}
 
 			if (!rowData.isEmpty() && rowData.stream().anyMatch(value -> value != null)) {
-				ImportSprint credentials = createSprintList(rowData);
+				ImportSprint credentials = createSprintList(rowData ,userId);
 				invList.add(credentials);
 			}
 		}
@@ -107,32 +112,57 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 		return headerRowData;
 	}
 
-	private ImportSprint createSprintList(List<String> rowData) {
-		int value3 = 0;
-		int value4 = 0;
-		String value5 = rowData.get(7);
 
-		if (rowData.get(6) != null && !rowData.get(6).isEmpty()) {
-			try {
-				value3 = Integer.parseInt(rowData.get(6));
-			} catch (NumberFormatException e) {
+private ImportSprint createSprintList(List<String> rowData, int userId) {
+    int value3 = 0;
+    int value4 = 0;
 
-			}
-		}
+    String value5 = rowData.get(7); // Assumed this is not a date field
+    String sprintCreatedDate = rowData.get(8);
+    String sprintStartDate = rowData.get(9);
+    String sprintCompletedDate = rowData.get(10);
+    String sprintEndDate = rowData.get(11);
 
-		if (rowData.get(4) != null && !rowData.get(4).isEmpty()) {
-			try {
-				value4 = Integer.parseInt(rowData.get(4));
-			} catch (NumberFormatException e) {
+    // Parse and format the date strings
+    String formattedCreatedDate = parseAndFormatDate(sprintCreatedDate);
+    String formattedStartDate = parseAndFormatDate(sprintStartDate);
+    String formattedCompletedDate = parseAndFormatDate(sprintCompletedDate);
+    String formattedEndDate = parseAndFormatDate(sprintEndDate);
 
-			}
-		}
+    if (rowData.get(6) != null && !rowData.get(6).isEmpty()) {
+        try {
+            value3 = Integer.parseInt(rowData.get(6));
+        } catch (NumberFormatException e) {
+            e.printStackTrace(); // Add appropriate handling
+        }
+    }
 
-		return new ImportSprint(value4, value3, value5);
-	}
+    if (rowData.get(4) != null && !rowData.get(4).isEmpty()) {
+        try {
+            value4 = Integer.parseInt(rowData.get(4));
+        } catch (NumberFormatException e) {
+            e.printStackTrace(); // Add appropriate handling
+        }
+    }
 
+    return new ImportSprint(value4, value3, value5, formattedStartDate, formattedEndDate, formattedCompletedDate, formattedCreatedDate, userId);
+}
+
+private String parseAndFormatDate(String dateStr) {
+    if (dateStr == null || dateStr.isEmpty()) {
+        return null;
+    }
+    try {
+        LocalDate date = LocalDate.parse(dateStr, INPUT_FORMATTER);
+        return date.format(OUTPUT_FORMATTER);
+    } catch (DateTimeParseException e) {
+        e.printStackTrace(); // Add appropriate handling
+        return null; // Or handle the error in another way
+    }
+}
+	
 	@Override
-	public int saveSprintData(List<ImportSprint> importSprints) {
+	public int saveSprintData(List<ImportSprint> importSprints, int userId) {
 		if (importSprints == null || importSprints.isEmpty()) {
 
 			return 0;
@@ -142,7 +172,7 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 		Set<Integer> sprintIds = uniqueSprints.stream().filter(sprint -> sprint != null && sprint.getSprintId() > 0)
 				.map(ImportSprint::getSprintId).collect(Collectors.toSet());
 
-		Map<Integer, ImportSprint> existingSprintsMap = importSprintRepository.findBySprintIdIn(sprintIds).stream()
+		Map<Integer, ImportSprint> existingSprintsMap = importSprintRepository.findBySprintIdInAndUserId(sprintIds, userId).stream()
 				.collect(Collectors.toMap(ImportSprint::getSprintId, Function.identity()));
 
 		List<ImportSprint> sprintsToSave = new ArrayList<>();
@@ -158,10 +188,15 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 				if (existingSprint != null) {
 
 					existingSprint.setProjectId(importSprint.getProjectId());
+					existingSprint.setCreatedDate(importSprint.getCreatedDate());
+					existingSprint.setStartDate(importSprint.getStartDate());
+					existingSprint.setCompleteDate(importSprint.getCompleteDate());
+					existingSprint.setEndDate(importSprint.getEndDate());
 					existingSprint.setSprintName(importSprint.getSprintName());
 					existingSprint.setStartDate(importSprint.getStartDate());
 					existingSprint.setEndDate(importSprint.getEndDate());
 					existingSprint.setCompleteDate(importSprint.getCompleteDate());
+			
 					sprintsToSave.add(existingSprint);
 				} else {
 
@@ -197,9 +232,9 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 	}
 
 	@Override
-	public List<SprintInfoDto> getAllSprintByProjectId(int projectId) {
+	public List<SprintInfoDto> getAllSprintByProjectId(int projectId, int UserId) {
 	    // Retrieve all sprints for the given project
-	    List<ImportSprint> sprintList = importSprintRepository.findAllSprintByProjectId(projectId);
+	    List<ImportSprint> sprintList = importSprintRepository.findAllSprintByProjectIdAndUserId(projectId, UserId);
  
 	    if (sprintList.isEmpty()) {
 	        // If there are no sprints, return an empty list
@@ -254,10 +289,10 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 	            }
 	        }
  
-	        // Convert estimates to days
-	        sumOriginalEstimate /= 3600;
-	        sumOriginalEstimate /= 8;
-	        sumAiEstimate /= 8;
+//	        // Convert estimates to days
+//	        sumOriginalEstimate /= 3600;
+//	        sumOriginalEstimate /= 8;
+//	        sumAiEstimate /= 8;
  
 	        sprintDTO.setSumOfOriginalEstimate(sumOriginalEstimate);
  
@@ -271,31 +306,30 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 	            // Iterate through each sprint date
 	            for (String sprintDate : sprintDatesById.get(sprint.getSprintId())) {
 	                // Filter tasks for the current sprint and date
-	                List<ImportTask> tasksForSprintAndDate = tasksForSprint.stream()
-	                        .filter(task -> {
-	                            List<Worklog> worklogs = task.getWorklogs();
-	                            return worklogs != null && worklogs.stream().anyMatch(worklog -> {
-	                                String startedDate = worklog.getStartedDate();
-	                                DateTimeFormatter inputFormatter = DateTimeFormatter
-	                                        .ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
- 
-	                                // Parse the input string to LocalDate using the input formatter
-	                                if (startedDate == null) {
-	                                    return false;
-	                                }
-	                                LocalDate worklogDate = LocalDate.parse(startedDate, inputFormatter);
- 
-	                                // Check if the worklog date matches the sprint date
-	                                return worklogDate.equals(LocalDate.parse(sprintDate));
-	                            });
-	                        })
-	                        .collect(Collectors.toList());
+	            	List<ImportTask> tasksForSprintAndDate = tasksForSprint.stream()
+	            		    .filter(task -> {
+	            		        // Ensure that actualTimedate is not null
+	            		        if (task.getActualTimeDate() == null) {
+	            		            return false;
+	            		        }
+	            		        
+	            		        // Parse the actualTimedate and sprintDate
+	            		        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+	            		        LocalDate actualTimeDate = LocalDate.parse(task.getActualTimeDate(), inputFormatter);
+	            		        LocalDate parsedSprintDate = LocalDate.parse(sprintDate, inputFormatter);
+
+	            		        // Check if the actualTimedate matches the sprint date
+	            		        return actualTimeDate.equals(parsedSprintDate);
+	            		    })
+	            		    .collect(Collectors.toList());
+
  
 	                // Create GraphDataDto objects for tasks on this sprint and date
 	                List<GraphDataDto> taskDto = new ArrayList<>();
  
 	                // Initialize variables to calculate aggregated values
-	                int totalActualEstimateInSeconds = 0;
+	                int totalOriginalEstimateInSeconds = 0;
+	                int totalActualTime = 0;
 	                double totalAiEstimate = 0.0;
 	                int totalRemaining = 0;
 	                double totalVelocity = 0.0;
@@ -314,7 +348,9 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 	                                totalThreePointEstimate += intThreePoint;
 	                            }
 	                        }
-	                        totalActualEstimateInSeconds += task.getOriginalEstimate();
+	                        
+	                        totalOriginalEstimateInSeconds += task.getOriginalEstimate();
+	                        totalActualTime += task.getActual();
 	                        String aiEstimateString = task.getAiEstimate();
 	                        if (aiEstimateString != null && !aiEstimateString.isEmpty()) {
 	                            if (aiEstimateString.contains(".")) {
@@ -325,10 +361,7 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 	                                totalAiEstimate += aiEstimateInt;
 	                            }
 	                        }
-
-	                    for (Worklog worklog : task.getWorklogs()) {
-	                        // Accumulate totalActualEstimate in seconds
-	                       	                        totalRemaining += task.getOriginalEstimate() - worklog.getTimeSpentSeconds();
+	                       
 	                        String velocity = task.getStoryPoints();
 	                        if (velocity != null && !velocity.isEmpty()) {
 	                            if (velocity.contains(".")) {
@@ -349,15 +382,17 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 	                                totalRiskFactor += intRiskFactor;
 	                            }
 	                        }
-	                       
-	                    }
+
+	                   
 	                }
  
 	                // Convert totalActualEstimate from seconds to hours
-	                double totalActualEstimateInHours = totalActualEstimateInSeconds / 3600.0;
- 
-	                // Convert totalRemaining from seconds to hours
-	                double totalRemainingInHours = totalRemaining / 3600.0;
+	                double totalActualEstimateInHours = totalActualTime;
+	                
+	                double totalRemainingInHours = totalOriginalEstimateInSeconds - totalActualTime;
+	                totalRemainingInHours = totalRemainingInHours < 0 ? 0 : totalRemainingInHours;
+//	                // Convert totalRemaining from seconds to hours
+//	                double totalRemainingInHours = totalRemaining / 3600.0;
 
  
 	                // Create a single GraphDataDto object with aggregated values for this date
@@ -369,7 +404,7 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 	                graphDataDto.setRiskFactor(String.valueOf(totalRiskFactor));
 	                // Convert totalVelocity to String before setting
 	                graphDataDto.setVelocity(String.valueOf(totalVelocity));
-	                // Add this single GraphDataDto object to the taskDto list
+	                
 	                taskDto.add(graphDataDto);
  
 	                // Put the taskDto list into the tasksBySprintDate map for this sprint date
@@ -425,23 +460,33 @@ public class ImportSprintServiceImpl implements ImportSprintService {
 		return sprints.getProjectId() + "-" + sprints.getSprintId() + "-" + sprints.getSprintName();
 	}
 
-	private List<String> getDatesBetween(String startDate, String endDate) {
-	    if (startDate == null || endDate == null) {
-	        return Collections.emptyList();
-	    }
+	  
 
-	    LocalDate start = LocalDate.parse(startDate.substring(0, 10));
-	    LocalDate end = LocalDate.parse(endDate.substring(0, 10));
-
-	    List<String> dates = new ArrayList<>();
-	    for (LocalDate date = start; !date.isAfter(end); date = date.plusDays(1)) {
-	        // Skip weekends (Saturday and Sunday)
-	        if (date.getDayOfWeek() != DayOfWeek.SATURDAY && date.getDayOfWeek() != DayOfWeek.SUNDAY) {
-	            dates.add(date.toString());
+	    private List<String> getDatesBetween(String startDate, String endDate) {
+	        if (startDate == null || endDate == null) {
+	            return Collections.emptyList();
 	        }
+	        DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+	        LocalDate start;
+	        LocalDate end;
+	        
+	        try {
+	            start = LocalDate.parse(startDate, DATE_FORMATTER);
+	            end = LocalDate.parse(endDate, DATE_FORMATTER);
+	        } catch (DateTimeParseException e) {
+	            e.printStackTrace(); // Add appropriate handling
+	            return Collections.emptyList();
+	        }
+
+	        List<String> dates = new ArrayList<>();
+	        for (LocalDate date = start; !date.isAfter(end); date = date.plusDays(1)) {
+	            // Skip weekends (Saturday and Sunday)
+	            if (date.getDayOfWeek() != DayOfWeek.SATURDAY && date.getDayOfWeek() != DayOfWeek.SUNDAY) {
+	                dates.add(date.format(DATE_FORMATTER));
+	            }
+	        }
+	        return dates;
 	    }
-	    return dates;
-	}
 
 
 }

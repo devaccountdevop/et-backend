@@ -59,7 +59,7 @@ public class SyncController {
 	                return response;
 	            }
 
-	            GetProjectResponse projectResponse = jiraRestService.getAllProjects(Integer.parseInt(clientId));
+	            GetProjectResponse projectResponse = jiraRestService.getAllProjects(Integer.parseInt(clientId), Integer.parseInt(userId));
 	            List<ImportProjects> projectInfoList = (List<ImportProjects>) projectResponse.getData();
 
 	            if (!projectInfoList.isEmpty()) {
@@ -70,8 +70,8 @@ public class SyncController {
 	                		
 	                for (ImportProjects project : projectInfoList) {
 	                    List<ImportSprint> sprintInfoList = jiraRestService.getAllSprintsByProjectId(project.getProjectId(),
-	                            Integer.parseInt(clientId));
-	                    allTasks.addAll(jiraRestService.getAllBacklogTasks(project.getProjectId(), Integer.parseInt(clientId)));
+	                            Integer.parseInt(clientId), Integer.parseInt(userId));
+	                    allTasks.addAll(jiraRestService.getAllBacklogTasks(project.getProjectId(), Integer.parseInt(clientId), Integer.parseInt(userId)));
 	                    
 	                    if (!sprintInfoList.isEmpty()) {
 	                        allSprints.addAll(sprintInfoList);
@@ -79,7 +79,7 @@ public class SyncController {
 	                        List<ImportTask> taskList = new ArrayList<>();
 	                        for (ImportSprint sprint : sprintInfoList) {
 	                            taskList.addAll(jiraRestService.getAllTasksBySprintId(sprint.getSprintId(),
-	                                    project.getProjectId(), Integer.parseInt(clientId)));
+	                                    project.getProjectId(), Integer.parseInt(clientId), Integer.parseInt(userId)));
 	                        }
 	                        allTasks.addAll(taskList);
 	                    }
@@ -87,12 +87,12 @@ public class SyncController {
 
 	                if (!allSprints.isEmpty() && !allTasks.isEmpty()) {
 						// Save all data to your database or perform any other necessary actions
-					  List<ImportProjects > updatedProject =	importProjectsService.saveProjectData(projectInfoList);
-						importSprintService.saveSprintData(allSprints);
+					  List<ImportProjects > updatedProject =	importProjectsService.saveProjectData(projectInfoList ,Integer.parseInt(userId));
+						importSprintService.saveSprintData(allSprints, Integer.parseInt(userId));
 //						allTasks.addAll(allBacklogTasks);
-						importTaskService.saveTaskData(allTasks);
+						importTaskService.saveTaskData(allTasks, Integer.parseInt(userId));
 						if(!allBacklogTasks.isEmpty()) {
-							importTaskService.saveTaskData(allBacklogTasks);
+							importTaskService.saveTaskData(allBacklogTasks, Integer.parseInt(userId));
 						}
 						response.setCode(HttpStatus.OK.value());
 						response.setData(updatedProject);

@@ -8,9 +8,9 @@ import com.es.entity.ImportTask;
 
 public interface ImportTaskService {
 	
-	List<ImportTask> getTaskDataAsList(InputStream inputStream);
+	List<ImportTask> getTaskDataAsList(InputStream inputStream, int userId);
 
-	int saveTaskData(List<ImportTask> importtask);
+	int saveTaskData(List<ImportTask> importtask, int userId);
 
 	ImportTask getTasks(int id);
 
@@ -20,5 +20,6 @@ public interface ImportTaskService {
 	List<ImportTask > getAllTaskBySprintId(int sprintId);
 	
 	 List<ImportTask> getAllBacklogTask(int projectId);
+	 int projectScope( int projectId, int sprintId,String sprintEndDate, int userId);
 
 }

@@ -12,10 +12,13 @@ import com.es.entity.ImportProjects;
 @Repository
 public interface ImportProjectsRepository extends JpaRepository<ImportProjects, Integer> {
 	
-	 public List<ImportProjects> findByJiraUserName(String jiraUserName);
+	  @Query("SELECT p FROM ImportProjects p WHERE p.jiraUserName = :jiraUserName AND p.userId = :userId")
+	    List<ImportProjects> findByJiraUserNameAndUserId(@Param("jiraUserName") String jiraUserName, @Param("userId") int userId);
 	 List< ImportProjects> findByUserId(Integer userId);
-	 ImportProjects findByProjectId(int projectId);
-	 List<ImportProjects> findByProjectIdIn(Set<Integer> projectIds);
+	  @Query("SELECT p FROM ImportProjects p WHERE p.projectId = :projectId AND p.userId = :userId")
+	    ImportProjects findByProjectIdAndUserId(@Param("projectId") int projectId, @Param("userId") int userId);
+	 @Query("SELECT p FROM ImportProjects p WHERE p.projectId IN :projectIds AND p.userId = :userId")
+	    List<ImportProjects> findByProjectIdInAndUserId(@Param("projectIds") Set<Integer> projectIds, @Param("userId") int userId);
 	//public  List<ImportProjects> findAllProjectByUserName(String jiraUserName);
 	 @Query("SELECT projectName FROM ImportProjects ip WHERE ip.jiraUserName = :jiraUserName")
 	    String findProjectNameByJiraUserName(@Param("jiraUserName") String jiraUserName);

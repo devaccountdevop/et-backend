@@ -40,7 +40,7 @@ public class DownloadExcelDataServiceImpl implements DownloadExcelData {
 
 
 	@Override
-	public byte[] generateProjectData(int projectId, int clientId) throws IOException {
+	public byte[] generateProjectData(int projectId, int clientId, int userId) throws IOException {
 		ClientCredentials clientData = new ClientCredentials();
 		if(clientId != 0) {
 			
@@ -52,7 +52,7 @@ public class DownloadExcelDataServiceImpl implements DownloadExcelData {
 	            throw new IllegalArgumentException("Project ID cannot be zero");
 	        }
 
-	        ProjectInfoDto downloadProject = importProjectsService.getProjectByProjectId(projectId);
+	        ProjectInfoDto downloadProject = importProjectsService.getProjectByProjectId(projectId, userId);
 
 	        try (Workbook workbook = new XSSFWorkbook()) {
 	            Sheet sheet = workbook.createSheet("Project Data");
@@ -166,7 +166,7 @@ public class DownloadExcelDataServiceImpl implements DownloadExcelData {
 
 
 	@Override
-	public byte[] generateSprintData(int projectId, int clientId, int sprintId) throws IOException {
+	public byte[] generateSprintData(int projectId, int clientId, int sprintId, int userId) throws IOException {
 	    ClientCredentials clientData = new ClientCredentials();
 	    if (clientId != 0) {
 	        clientData = clientCredentialsService.getClientCredentials(clientId);
@@ -176,7 +176,7 @@ public class DownloadExcelDataServiceImpl implements DownloadExcelData {
 	        throw new IllegalArgumentException("Project ID cannot be zero");
 	    }
 
-	    ProjectInfoDto downloadProject = importProjectsService.getProjectByProjectId(projectId);
+	    ProjectInfoDto downloadProject = importProjectsService.getProjectByProjectId(projectId, userId);
 
 	    try (Workbook workbook = new XSSFWorkbook()) {
 	        Sheet sheet = workbook.createSheet("Project Data");
@@ -258,7 +258,7 @@ public class DownloadExcelDataServiceImpl implements DownloadExcelData {
 
 
 	@Override
-	public byte[] generateBacklogData(int projectId, int clientId) throws IOException {
+	public byte[] generateBacklogData(int projectId, int clientId, int userId) throws IOException {
 		 ClientCredentials clientData = new ClientCredentials();
 		    if (clientId != 0) {
 		        clientData = clientCredentialsService.getClientCredentials(clientId);
@@ -267,7 +267,7 @@ public class DownloadExcelDataServiceImpl implements DownloadExcelData {
 		        throw new IllegalArgumentException("Project ID cannot be zero");
 		    }
 
-		    ProjectInfoDto downloadProject = importProjectsService.getProjectByProjectId(projectId);
+		    ProjectInfoDto downloadProject = importProjectsService.getProjectByProjectId(projectId, userId);
 
 		    try (Workbook workbook = new XSSFWorkbook()) {
 		        Sheet sheet = workbook.createSheet("Backlog Data");

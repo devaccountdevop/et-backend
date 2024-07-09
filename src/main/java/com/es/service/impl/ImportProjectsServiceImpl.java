@@ -164,7 +164,7 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 	}
 
 	@Override
-	public List<ImportProjects> saveProjectData(List<ImportProjects> projects) {
+	public List<ImportProjects> saveProjectData(List<ImportProjects> projects, int userId) {
 		if (projects == null || projects.isEmpty()) {
 
 			return projects;
@@ -176,7 +176,7 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 				.filter(project -> project != null && project.getProjectId() > 0).map(ImportProjects::getProjectId)
 				.collect(Collectors.toSet());
 
-		Map<Integer, ImportProjects> existingProjectsMap = importProjectsRepository.findByProjectIdIn(projectIds)
+		Map<Integer, ImportProjects> existingProjectsMap = importProjectsRepository.findByProjectIdInAndUserId(projectIds, userId)
 				.stream().collect(Collectors.toMap(ImportProjects::getProjectId, Function.identity()));
 
 		List<ImportProjects> projectsToSave = new ArrayList<>();
@@ -237,17 +237,17 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 	}
 
 	@Override
-	public List<ProjectInfoDto> getProjectsByJiraUserName(String jiraUserName) {
-	    List<ImportProjects> importProjects = importProjectsRepository.findByJiraUserName(jiraUserName);
+	public List<ProjectInfoDto> getProjectsByJiraUserName(String jiraUserName, int userId) {
+	    List<ImportProjects> importProjects = importProjectsRepository.findByJiraUserNameAndUserId(jiraUserName, userId);
 	    List<ProjectInfoDto> projectInfoDtoList = new ArrayList<>();
 
 	    for (ImportProjects project : importProjects) {
 //	        List<ImportSprint> importSprints = importSprintRepository.findAllSprintByProjectId(project.getProjectId());
-	        List<SprintInfoDto> importSprints = importSprintService.getAllSprintByProjectId(project.getProjectId());
+	        List<SprintInfoDto> importSprints = importSprintService.getAllSprintByProjectId(project.getProjectId(), userId);
 	        String projectStartDate = null;
 	        String projectEndDate = null;
 	        List<ProjectGraphDto> projectGraphDto = new ArrayList();
-	      
+	         int newScope = 0;
 	        int sumOriginalEstimate = 0;
 	        double sumAiEstimate = 0.0;
 	        if (importSprints != null && !importSprints.isEmpty()) {
@@ -263,7 +263,7 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 	            		 projectEndDate = sprint.getEndDate();
 	            	}
 	            	ProjectGraphDto graphDto = new ProjectGraphDto();
-	            	
+	            	  newScope =importTaskService.projectScope(project.getProjectId(), sprint.getSprintId(), sprint.getEndDate(),project.getUserId() );
 	            	graphDto.setTaskDetails(importTaskService.getAllTaskBySprintId(sprint.getSprintId()));
 	            	 sumOriginalEstimate += sprint.getSumOfOriginalEstimate();
 	            	String aiEstimateString = sprint.getSumOfAiEstimate();
@@ -281,7 +281,7 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 		        
 	 
 		       
-		       
+		            graphDto.setProjectScope(newScope);
 	            	graphDto.setEndDate(sprint.getEndDate());
 	            	graphDto.setProjectId(sprint.getProjectId());
 	            	graphDto.setSprintId(sprint.getSprintId());
@@ -359,6 +359,7 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 		
 		 List<ImportProjects> importProjects = importProjectsRepository.findByUserId(userId);
 		 
+		 
 		 List<ImportProjects> projectsWithOutClient = importProjects.stream()
 			        .filter(project -> project.getJiraUserName() == null || project.getJiraUserName().isEmpty())
 			        .collect(Collectors.toList());
@@ -367,11 +368,11 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 		    for (ImportProjects project : projectsWithOutClient) {
 		    	
 //		        List<ImportSprint> importSprints = importSprintRepository.findAllSprintByProjectId(project.getProjectId());
-		        List<SprintInfoDto> importSprints = importSprintService.getAllSprintByProjectId(project.getProjectId());
+		        List<SprintInfoDto> importSprints = importSprintService.getAllSprintByProjectId(project.getProjectId(), project.getUserId());
 		        String projectStartDate = null;
 		        String projectEndDate = null;
 		        List<ProjectGraphDto> projectGraphDto = new ArrayList();
-		      
+		        int newScope = 0;
 		        int sumOriginalEstimate = 0;
 		        double sumAiEstimate = 0.0;
 		        if (importSprints != null && !importSprints.isEmpty()) {
@@ -387,7 +388,7 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 		            		 projectEndDate = sprint.getEndDate();
 		            	}
 		            	ProjectGraphDto graphDto = new ProjectGraphDto();
-		            	
+		            	 newScope =importTaskService.projectScope(project.getProjectId(), sprint.getSprintId(), sprint.getEndDate(),project.getUserId() );
 		            	graphDto.setTaskDetails(importTaskService.getAllTaskBySprintId(sprint.getSprintId()));
 		            	 sumOriginalEstimate += sprint.getSumOfOriginalEstimate();
 		            	String aiEstimateString = sprint.getSumOfAiEstimate();
@@ -405,7 +406,7 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 			        
 		 
 			       
-			       
+			            graphDto.setProjectScope(newScope);
 		            	graphDto.setEndDate(sprint.getEndDate());
 		            	graphDto.setProjectId(sprint.getProjectId());
 		            	graphDto.setSprintId(sprint.getSprintId());
@@ -438,14 +439,14 @@ public class ImportProjectsServiceImpl implements ImportProjectsService {
 		}
 
 	@Override
-	public ProjectInfoDto getProjectByProjectId(int projectId) {
+	public ProjectInfoDto getProjectByProjectId(int projectId, int userId) {
 	    // Find the project by its ID
-	    ImportProjects downloadProject = importProjectsRepository.findByProjectId(projectId);
+	    ImportProjects downloadProject = importProjectsRepository.findByProjectIdAndUserId(projectId, userId);
  
 	   
  
 	    // Retrieve sprints for the project
-	    List<SprintInfoDto> importSprints = importSprintService.getAllSprintByProjectId(downloadProject.getProjectId());
+	    List<SprintInfoDto> importSprints = importSprintService.getAllSprintByProjectId(downloadProject.getProjectId(), userId);
  
 	    String projectStartDate = null;
 	    String projectEndDate = null;

@@ -2,12 +2,19 @@ package com.es.dto;
 
 public class AiResponseDto {
 	
+	private String taskId;
 	private String aiEstimate;
 	private String threePointEstimate;
 	private String riskFactor;
 	private String replaced;
 	
 	
+	public String getTaskId() {
+		return taskId;
+	}
+	public void setTaskId(String taskId) {
+		this.taskId = taskId;
+	}
 	public String getReplaced() {
 		return replaced;
 	}
