@@ -22,24 +22,24 @@ public class BacklogTasksController {
 	@Autowired
 	JIRARestService jiraRestService;
 	
-	@GetMapping("/backlogtasks/{projectId}")
-	public BackLogTaskResponse getBacklogTasks(@PathVariable String projectId) {
-		BackLogTaskResponse response = new BackLogTaskResponse();
-		if(projectId != null) {
-			
-			List<SprintListPageDto> tasklist = new ArrayList<>();
-			    tasklist.addAll(jiraRestService.getAllBacklogTasks(Integer.parseInt(projectId)));
-			response.setCode(SuccessEnum.SUCCESS_TYPE.getCode());
-			response.setMessage(SuccessEnum.SUCCESS_TYPE.getMessage());
-			response.setData(tasklist);
-			return response;
-			
-		}else {
-			response.setCode(ExceptionEnum.INVALID_PARAMETER.getErrorCode());
-			response.setMessage(ExceptionEnum.INVALID_PARAMETER.getMessage());
-			return response;
-		}
-		
-	}
+//	@GetMapping("/backlogtasks/{projectId}")
+//	public BackLogTaskResponse getBacklogTasks(@PathVariable String projectId) {
+//		BackLogTaskResponse response = new BackLogTaskResponse();
+//		if(projectId != null) {
+//			
+//			List<SprintListPageDto> tasklist = new ArrayList<>();
+//			    tasklist.addAll(jiraRestService.getAllBacklogTasks(Integer.parseInt(projectId)));
+//			response.setCode(SuccessEnum.SUCCESS_TYPE.getCode());
+//			response.setMessage(SuccessEnum.SUCCESS_TYPE.getMessage());
+//			response.setData(tasklist);
+//			return response;
+//			
+//		}else {
+//			response.setCode(ExceptionEnum.INVALID_PARAMETER.getErrorCode());
+//			response.setMessage(ExceptionEnum.INVALID_PARAMETER.getMessage());
+//			return response;
+//		}
+//		
+//	}
 	
 }

@@ -36,11 +36,11 @@ public class SprintController {
 	@Autowired
 	ImportSprintService importSprintService;
 
-	@GetMapping("getAllSprints/{projectId}")
-	public GetSprintResponse getAllSprints(@PathVariable String projectId) {
+	@GetMapping("getAllSprints/{projectId}/{userId}")
+	public GetSprintResponse getAllSprints(@PathVariable String projectId, @PathVariable String userId) {
 		GetSprintResponse response = new GetSprintResponse();
 
-		List<SprintInfoDto> list = importSprintService.getAllSprintByProjectId(Integer.parseInt(projectId));
+		List<SprintInfoDto> list = importSprintService.getAllSprintByProjectId(Integer.parseInt(projectId), Integer.parseInt(userId));
 
 		if (!list.isEmpty()) {
 			response.setCode(200);

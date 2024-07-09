@@ -9,9 +9,9 @@ import com.es.entity.ImportSprint;
 
 public interface ImportSprintService {
 
-	List<ImportSprint> getSprintDataAsList(InputStream inputStream);
+	List<ImportSprint> getSprintDataAsList(InputStream inputStream , int userId);
 
-	int saveSprintData(List<ImportSprint> importSprint);
+	int saveSprintData(List<ImportSprint> importSprint, int userId);
 
 	ImportSprint getProjects(int id);
 
@@ -19,5 +19,5 @@ public interface ImportSprintService {
 
 	ImportSprint updateClientCredentials(ImportSprint importSprint);
 
-	List<SprintInfoDto> getAllSprintByProjectId(int projectId);
+	List<SprintInfoDto> getAllSprintByProjectId(int projectId, int userId);
 }

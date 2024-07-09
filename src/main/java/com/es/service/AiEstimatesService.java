@@ -1,5 +1,6 @@
 package com.es.service;
 
+import java.util.List;
 import java.util.Map;
 
 import com.es.dto.AiResponseDto;
@@ -9,9 +10,9 @@ import com.es.response.AiEstimatesResponse;
 
 public interface AiEstimatesService {
 
-	AiResponseDto getAiEstimates(AiTaskEstimateRequestDto request) throws Exception;
+	List<AiResponseDto> getAiEstimates(List<AiTaskEstimateRequestDto> request) throws Exception;
 
-	void saveCustomFields(Map<String,Object> object) throws Exception;
-	 AiTaskEstimateRequestDto dataForAiEstimates(Map<String,Object> object);
-	 ImportTask saveAiResponse(ImportTask importTask, AiResponseDto aiResponseDto);
+	void saveCustomFields(List<ImportTask> importtasks) throws Exception;
+	 List<AiTaskEstimateRequestDto> dataForAiEstimates(List<Map<String,Object>> object);
+	 List<ImportTask> saveAiResponse(List<AiResponseDto> aiResponseDto, int sprintId);
 }

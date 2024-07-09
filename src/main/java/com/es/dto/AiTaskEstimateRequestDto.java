@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class AiTaskEstimateRequestDto {
  
 	@JsonProperty("summary")
+	private String task_id;
 	private String task_name;
 	private String task_description;
 	private String task_label;
@@ -69,6 +70,18 @@ public class AiTaskEstimateRequestDto {
 	}
 	public void setPessimistic_estimate(String pessimistic_estimate) {
 		Pessimistic_estimate = pessimistic_estimate;
+	}
+	public String getTask_id() {
+		return task_id;
+	}
+	public void setTask_id(String task_id) {
+		this.task_id = task_id;
+	}
+	public String getTask_description() {
+		return task_description;
+	}
+	public void setTask_description(String task_description) {
+		this.task_description = task_description;
 	}
  
 	

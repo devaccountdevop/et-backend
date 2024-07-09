@@ -148,7 +148,7 @@ public class ImportExcelFileController {
 	        // Process project data
 	        List<ImportProjects> projectList = importProjectsService.getProjectDataAsList(file.getInputStream(), Integer.parseInt(Id));
 	        if (!projectList.isEmpty()) {
-	            List<ImportProjects> noOfProjectUpdated = importProjectsService.saveProjectData(projectList);
+	            List<ImportProjects> noOfProjectUpdated = importProjectsService.saveProjectData(projectList, Integer.parseInt(Id));
 	               if(noOfProjectUpdated.equals(projectList)) {
 	            	   message.append("Error saving project records. ");
 	               }else {
@@ -161,9 +161,9 @@ public class ImportExcelFileController {
 	        }
 
 	        // Process sprint data
-	        List<ImportSprint> sprintList = importSprintService.getSprintDataAsList(file.getInputStream());
+	        List<ImportSprint> sprintList = importSprintService.getSprintDataAsList(file.getInputStream(), Integer.parseInt(Id));
 	        if (!sprintList.isEmpty()) {
-	            int noOfSprintRecords = importSprintService.saveSprintData(sprintList);
+	            int noOfSprintRecords = importSprintService.saveSprintData(sprintList, Integer.parseInt(Id));
 	            if (noOfSprintRecords == 0) {
 	                hasError = true;
 	                message.append("Error saving sprint records. ");
@@ -175,9 +175,9 @@ public class ImportExcelFileController {
 	        }
 
 	        // Process task data
-	        List<ImportTask> taskList = importTaskService.getTaskDataAsList(file.getInputStream());
+	        List<ImportTask> taskList = importTaskService.getTaskDataAsList(file.getInputStream(), Integer.parseInt(Id));
 	        if (!taskList.isEmpty()) {
-	            int noOfTaskRecords = importTaskService.saveTaskData(taskList);
+	            int noOfTaskRecords = importTaskService.saveTaskData(taskList , Integer.parseInt(Id));
 	            if (noOfTaskRecords == 0) {
 	                hasError = true;
 	                message.append("Error saving task records. ");

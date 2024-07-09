@@ -19,7 +19,23 @@ public class ImportSprint {
 	private String startDate;
 	private String endDate;
 	private String completeDate;
+	private String createdDate;
+	private int userId;
 	
+	
+	
+	public String getCreatedDate() {
+		return createdDate;
+	}
+	public void setCreatedDate(String createdDate) {
+		this.createdDate = createdDate;
+	}
+	public int getUserId() {
+		return userId;
+	}
+	public void setUserId(int userId) {
+		this.userId = userId;
+	}
 	public String getStartDate() {
 		return startDate;
 	}
@@ -69,10 +85,12 @@ public class ImportSprint {
 		this.sprintName = sprintName;
 	}
 	
+
+	
 	
 	
 	public ImportSprint(int projectId, int sprintId, String sprintName, String startDate, String endDate,
-			String completeDate) {
+			String completeDate, String createdDate, int userId) {
 		super();
 		this.projectId = projectId;
 		this.sprintId = sprintId;
@@ -80,6 +98,19 @@ public class ImportSprint {
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.completeDate = completeDate;
+		this.createdDate = createdDate;
+		this.userId = userId;
+	}
+	public ImportSprint(int projectId, int sprintId, String sprintName, String startDate, String endDate,
+			String completeDate, int userId) {
+		super();
+		this.projectId = projectId;
+		this.sprintId = sprintId;
+		this.sprintName = sprintName;
+		this.startDate = startDate;
+		this.endDate = endDate;
+		this.completeDate = completeDate;
+		this.userId = userId;
 	}
 	public ImportSprint() {
 		

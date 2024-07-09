@@ -46,9 +46,22 @@ private int projectId;
 	private String riskFactor;
 	private int originalEstimate;
 	private String storyPoints;
-	
+	private int userId;
 	private String assignee;
 	private String creationDate;
+	private String sprintAssignDate;
+	private String actualTimeDate;
+	
+	
+	
+	public String getActualTimeDate() {
+		return actualTimeDate;
+	}
+
+	public void setActualTimeDate(String actualTimeDate) {
+		this.actualTimeDate = actualTimeDate;
+	}
+
 	@OneToMany(mappedBy = "importTask", cascade = CascadeType.ALL)
 	 @JsonIgnoreProperties("importTask")
 	private List<Worklog> worklogs;
@@ -56,6 +69,22 @@ private int projectId;
 	
 	
 	
+	public int getUserId() {
+		return userId;
+	}
+
+	public void setUserId(int userId) {
+		this.userId = userId;
+	}
+
+	public String getSprintAssignDate() {
+		return sprintAssignDate;
+	}
+
+	public void setSprintAssignDate(String sprintAssignDate) {
+		this.sprintAssignDate = sprintAssignDate;
+	}
+
 	public int getProjectId() {
 		return projectId;
 	}
@@ -93,7 +122,7 @@ private int projectId;
 	}
 
 	public void setCreationDate(String creationDate) {
-		creationDate = creationDate;
+		this.creationDate = creationDate;
 	}
 
 
@@ -322,14 +351,15 @@ private int projectId;
 	}
 
 	public ImportTask(int sprintId, String summary, String taskId, String taskDescription, 
-			String aiEstimate, int actual, List<String> labels, TaskEstimates estimates, String storyPoints, int originalEstimate, String priority, String assignee, String creationDate, String taskStatus, List<Worklog> worklogs , String threePointEstimate,String riskFactor,int projectId) {
+			String aiEstimate, int actual,
+			String actualTimeDate, List<String> labels, TaskEstimates estimates, String storyPoints, int originalEstimate, String priority, String assignee, String creationDate, String taskStatus, List<Worklog> worklogs , String threePointEstimate,String riskFactor,int projectId, int userId) {
 		super();
 		this.sprintId = sprintId;
 		this.summary = summary;
 		this.taskId = taskId;
 		this.taskDescription = taskDescription;
 		this.estimates = estimates;
-		
+		this.actualTimeDate = actualTimeDate;
 		this.aiEstimate = aiEstimate;
 		this.actual = actual;
 		this.labels = labels;
@@ -344,9 +374,10 @@ private int projectId;
 		this.threePointEstimate = threePointEstimate;
 		this.riskFactor = riskFactor;
 		this.projectId = projectId;
+		this.userId = userId;
 	}
 	public ImportTask(int sprintId, String summary, String taskId, String taskType, String taskPriority,
-			String taskStatus, List<String> taskLabels, String taskDescription, TaskEstimates estimates,String aiEstimate, int originalEstimate,int projectId) {
+			String taskStatus, List<String> taskLabels, String taskDescription, TaskEstimates estimates,String createdDate, int originalEstimate,int projectId,String sprintAssignDate,String actualTimeDate, int actualEstimate, String storyPoint, int userId ) {
 		super();
 
 		this.sprintId = sprintId;
@@ -358,14 +389,19 @@ private int projectId;
 		this.labels = taskLabels;
 		this.taskDescription = taskDescription;
 		this.estimates = estimates;
-		this.aiEstimate = aiEstimate;
+		this.creationDate = createdDate;
 		this.originalEstimate = originalEstimate;
 		this.projectId = projectId;
+		this.sprintAssignDate = sprintAssignDate;
+		this.actual = actualEstimate;
+		this.storyPoints = storyPoint;
+		this.userId = userId;
+		this.actualTimeDate = actualTimeDate;
 	}
 	
 	public ImportTask(String summary, int projectId, String taskId, String taskDescription, TaskEstimates estimates,
 			 String aiEstimate, List<String> labels,  int originalEstimate,
-			String storyPoints, String creationDate) {
+			String storyPoints, String creationDate, int userId) {
 		super();
 		this.summary = summary;
 		this.projectId = projectId;
@@ -377,6 +413,7 @@ private int projectId;
 		this.originalEstimate = originalEstimate;
 		this.storyPoints = storyPoints;
 		this.creationDate = creationDate;
+		this.userId = userId;
 	}
 
 }

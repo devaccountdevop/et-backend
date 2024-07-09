@@ -1,7 +1,10 @@
 package com.es.service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -74,7 +77,7 @@ public class JIRARestService {
 	@Autowired
 	ClientCredentialsService clientCredentialsService;
 
-	public GetProjectResponse getAllProjects(int clientId) {
+	public GetProjectResponse getAllProjects(int clientId, int userId) {
 		GetProjectResponse response = new GetProjectResponse();
 
 		ClientCredentials clientCredentials = clientCredentialsService.getClientCredentials(clientId);
@@ -93,12 +96,12 @@ public class JIRARestService {
 			handleJiraApiErrors(ex);
 		}
 
-		return handleImportProjectApiSuccessRes(clientCredentials, responseEntity);
+		return handleImportProjectApiSuccessRes(clientCredentials, responseEntity, userId);
 
 	}
 
 	private GetProjectResponse handleImportProjectApiSuccessRes(ClientCredentials clientCredentials,
-			ResponseEntity<String> responseEntity) {
+			ResponseEntity<String> responseEntity, int userId) {
 		GetProjectResponse response = new GetProjectResponse();
 
 		String jsonResponse = responseEntity.getBody();
@@ -116,7 +119,7 @@ public class JIRARestService {
 			String projectName = location.get("projectName").getAsString();
 
 			ImportProjects projectInfo = new ImportProjects(projectId, projectName,
-					clientCredentials.getJiraUserName());
+					clientCredentials.getJiraUserName(), userId);
 			projectInfoList.add(projectInfo);
 		}
 		response.setCode(responseEntity.getStatusCodeValue());
@@ -156,7 +159,7 @@ public class JIRARestService {
 				responseEntity.getLocalizedMessage());
 
 	}
-	public List<ImportSprint> getAllSprintsByProjectId(int projectId, int clientId) {
+	public List<ImportSprint> getAllSprintsByProjectId(int projectId, int clientId, int userId) {
 		try {
 			ClientCredentials clientCredentials = clientCredentialsService.getClientCredentials(clientId);
 
@@ -202,9 +205,13 @@ public class JIRARestService {
 						String completeDate = sprintObject.has("completeDate")
 								? sprintObject.get("completeDate").getAsString()
 								: null;
+						
+						 String  formatedStartDate = formatDate(startDate);
+						 String formatedEndDate = formatDate(endDate);
+						 String formatedCompleteDate = formatDate(completeDate);
 
-						ImportSprint sprintInfo = new ImportSprint(projectId, sprintId, sprintName, startDate, endDate,
-								completeDate);
+						ImportSprint sprintInfo = new ImportSprint(projectId, sprintId, sprintName, formatedStartDate, formatedEndDate,
+								formatedCompleteDate, userId);
 //						sprintInfo.setStartDate(startDate);
 //                        sprintInfo.setEndDate(endDate);
 //                        sprintInfo.setCompleteDate(completeDate);
@@ -233,8 +240,25 @@ public class JIRARestService {
 			return Collections.emptyList();
 		}
 	}
+	
+	 private static String formatDate(String dateStr) {
+	        if (dateStr == null) {
+	            return null;
+	        }
 
-	public List<ImportTask> getAllTasksBySprintId(int SprintId, int projectId, int clientId) {
+	        SimpleDateFormat inputFormat  = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+	        SimpleDateFormat outputFormat = new SimpleDateFormat("MM/dd/yyyy");
+
+	        try {
+	            Date date = inputFormat.parse(dateStr);
+	            return outputFormat.format(date);
+	        } catch (ParseException e) {
+	            e.printStackTrace();
+	            return null;
+	        }
+	    }
+
+	public List<ImportTask> getAllTasksBySprintId(int SprintId, int projectId, int clientId, int userId) {
 
 		String customFieldInJira;
 		ClientCredentials clientCredentials = clientCredentialsService.getClientCredentials(clientId);
@@ -291,31 +315,39 @@ public class JIRARestService {
 						JsonObject taskObj = fields.getAsJsonObject("issuetype");
 						String taskType = taskObj.get("name").getAsString();
 						List<Worklog> worklogs = new ArrayList<>();
+						 int totalTimeSpentSeconds = 0;
+			                String lastStartedDate = null;
 						if (taskType != "story") {
 						    JsonObject worklogobj = fields.getAsJsonObject("worklog");
 						    JsonArray worklog = (worklogobj != null) ? worklogobj.getAsJsonArray("worklogs") : null;
 
 						    if (worklog != null && worklog.size() > 0) {
-						        for (int j = 0; j < worklog.size(); j++) {
-						            JsonObject worklogObject = worklog.get(j).getAsJsonObject();
-						            String startedDate = worklogObject.get("started").isJsonNull() ? null
-						                    : worklogObject.get("started").getAsString();
-						            int timeSpentSeconds = worklogObject.get("timeSpentSeconds").isJsonNull() ? 0
-						                    : worklogObject.get("timeSpentSeconds").getAsInt();
-						            String createdDate1 = worklogObject.get("created").isJsonNull() ? null
-						                    : worklogObject.get("created").getAsString();
-						            String updatedDate = worklogObject.get("updated").isJsonNull() ? null
-						                    : worklogObject.get("updated").getAsString();
-						            String timeSpent = worklogObject.get("timeSpent").isJsonNull() ? null
-						                    : worklogObject.get("timeSpent").getAsString();
+						    	 
 
-						            Worklog worklogInfo = new Worklog(issueId, createdDate1, updatedDate, startedDate,
-						                    timeSpent, timeSpentSeconds);
-						            worklogs.add(worklogInfo);
-						        }
+					                for (int j = 0; j < worklog.size(); j++) {
+					                    JsonObject worklogObject = worklog.get(j).getAsJsonObject();
+					                    String startedDate = worklogObject.get("started").isJsonNull() ? null
+					                            : worklogObject.get("started").getAsString();
+					                    int timeSpentSeconds = worklogObject.get("timeSpentSeconds").isJsonNull() ? 0
+					                            : worklogObject.get("timeSpentSeconds").getAsInt();
+					                    String createdDate1 = worklogObject.get("created").isJsonNull() ? null
+					                            : worklogObject.get("created").getAsString();
+					                    String updatedDate = worklogObject.get("updated").isJsonNull() ? null
+					                            : worklogObject.get("updated").getAsString();
+					                    String timeSpent = worklogObject.get("timeSpent").isJsonNull() ? null
+					                            : worklogObject.get("timeSpent").getAsString();
+					                 
+					                    totalTimeSpentSeconds += timeSpentSeconds/3600;
+
+					                    if (startedDate != null) {
+					                        if (lastStartedDate == null || startedDate.compareTo(lastStartedDate) > 0) {
+					                            lastStartedDate = startedDate;
+					                        }
+					                    }
+					                }
 						    }
 						}
-
+						 String  formatedActualTimeDate = formatDate(lastStartedDate);
 
 						JsonElement assigneeElement = fields.get("assignee");
 						String assigne = null;
@@ -329,6 +361,9 @@ public class JIRARestService {
 						}
 
 						String createdDate = fields.get("created").getAsString();
+						
+						 String  formatedCreatedDate = formatDate(createdDate);
+						
 
 						String issueName = fields.get("summary").getAsString();
 						JsonElement descriptionElement = fields.get("description");
@@ -350,7 +385,7 @@ public class JIRARestService {
 								&& !originalEstimateElement.isJsonNull())
 										? Integer.parseInt(originalEstimateElement.getAsString())
 										: 0;
-
+						originalEstimate = originalEstimate / 3600;
 						JsonObject priorityObject = fields.getAsJsonObject("priority");
 						String priority = (priorityObject != null && !priorityObject.isJsonNull())
 								? priorityObject.get("name").getAsString()
@@ -371,8 +406,8 @@ public class JIRARestService {
 						taskEstimates.setRealistic(0);
 						taskEstimates.setTaskId(issueId);
 						ImportTask taskInfo = new ImportTask(SprintId, issueName, issueId, issueDescription, aiEstimate,
-								0, labelsList, taskEstimates, storyPoints, originalEstimate, priority, assigne,
-								createdDate,taskStatus, worklogs ,"0","0",projectId);
+								totalTimeSpentSeconds,formatedActualTimeDate, labelsList, taskEstimates, storyPoints, originalEstimate, priority, assigne,
+								formatedCreatedDate,taskStatus, worklogs ,"0","0",projectId, userId);
 						taskInfoList.add(taskInfo);
 					}
 
@@ -457,7 +492,7 @@ public class JIRARestService {
 
 	}
 
-	public List<ImportTask> getAllBacklogTasks(int projectId, int clientId) {
+	public List<ImportTask> getAllBacklogTasks(int projectId, int clientId , int userId) {
 	    ClientCredentials clientCredentials = clientCredentialsService.getClientCredentials(clientId);
  
 	    String originalEstimateFieldInJira = null;
@@ -520,7 +555,10 @@ public class JIRARestService {
 					&& !originalEstimateElement.isJsonNull())
 							? Integer.parseInt(originalEstimateElement.getAsString())
 							: 0;
+			originalEstimate = originalEstimate/3600;
 	        String createdDate = fields.get("created").getAsString();
+	        String  formatedCreatedDate = formatDate(createdDate);
+			
 	        
 	        List<String> labels = new ArrayList<>();
 	        JsonArray labelArray = fields.getAsJsonArray("labels");
@@ -535,7 +573,7 @@ public class JIRARestService {
 	        
 	        AiEstimatesDto aiEstimatesDto = new AiEstimatesDto(); // Similarly, this might need proper initialization
 	        
-	        ImportTask backlogTask = new ImportTask(issueName, projectId, issueId, issueDescription, estimates,aiEstimate, labels,  originalEstimate, storyPoints, createdDate);
+	        ImportTask backlogTask = new ImportTask(issueName, projectId, issueId, issueDescription, estimates,aiEstimate, labels,  originalEstimate, storyPoints, formatedCreatedDate, userId);
 	        taskInfoList.add(backlogTask);
 	    }
  
