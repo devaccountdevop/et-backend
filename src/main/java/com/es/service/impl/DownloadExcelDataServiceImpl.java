@@ -2,6 +2,9 @@ package com.es.service.impl;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.poi.ss.usermodel.Cell;
@@ -65,7 +68,7 @@ public class DownloadExcelDataServiceImpl implements DownloadExcelData {
 
 	            // Set the value for the merged cell
 	            Cell infoCell = infoRow.createCell(0);
-	            infoCell.setCellValue("Information about the Columns:\nIssue Type - e.g: \"Bug,\" \"Story,\" or \"Task,\". Status - e.g: \"To Do,\" \"In Progress,\" or \"Done,\". Priority - e.g: \"High,\" \"Medium,\" or \"Low,\".");
+	            infoCell.setCellValue("Information about the Columns:\nIssue Type - e.g: \"Bug,\" \"Story,\" or \"Task,\". Status - e.g: \"To Do,\" \"In Progress,\" or \"Done,\". Priority - e.g: \"High,\" \"Medium,\" or \"Low,\"Date format - \"M/D/YY\".");
 
 	            
 	            // Wrap text for the merged cells
@@ -77,11 +80,12 @@ public class DownloadExcelDataServiceImpl implements DownloadExcelData {
 	            
 	            Row headerRow = sheet.createRow(2);
 	            String[] headers = {
-	                "clientName", "clientUserName", "clientToken", "clientUserName For project",
-	                "projectId", "ProjectName", "sprintId", "sprintName", "Summary", "Issue key",
-	                "Issue Type", "Status", "Priority", "Original estimate", "Updated", "Labels",
-	                "Description", "Custom field (Ai Estimate)", "Optimistic Estimate",
-	                "Pessimistic Estimate", "Realistic Estimate"
+	            		"clientName", "clientUserName", "clientToken", "clientUserName For project",
+		                "projectId", "ProjectName", "sprintId", "sprintName","Sprint Created Date",
+		                "Sprint Start Date","Sprint Completed Date","Sprint End Date", "Summary", "Issue key",
+		                "Issue Type", "Status", "Priority","Story Points", "Original estimate(Hrs)","Actual Time(Hrs)",
+		                "Actual Time Date",  "Labels","Description","Creation Date","Sprint Assign Date", "Optimistic Estimate",
+		                "Pessimistic Estimate", "Realistic Estimate"
 	            };
 	            for (int i = 0; i < headers.length; i++) {
 	                Cell cell = headerRow.createCell(i);
@@ -113,19 +117,28 @@ public class DownloadExcelDataServiceImpl implements DownloadExcelData {
 	                    row.createCell(5).setCellValue(downloadProject.getProjectName()); // ProjectName
 	                    row.createCell(6).setCellValue(sprint.getSprintId()); // sprintId
 	                    row.createCell(7).setCellValue(sprint.getSprintName()); // sprintName
-	                    row.createCell(8).setCellValue(task.getSummary()); // Summary
-	                    row.createCell(9).setCellValue(task.getTaskId()); // Issue key
-	                    row.createCell(10).setCellValue(task.getTaskType()); // Issue Type
-	                    row.createCell(11).setCellValue(task.getTaskStatus()); // Status
-	                    row.createCell(12).setCellValue(task.getTaskPriority()); // Priority
-	                    row.createCell(13).setCellValue(task.getOriginalEstimate()); // Original estimate
-	                    row.createCell(14).setCellValue(task.getCreationDate()); // Updated
-	                    row.createCell(15).setCellValue(task.getAssignee()); // Labels
-	                    row.createCell(16).setCellValue(task.getTaskDescription()); // Description
-	                    row.createCell(17).setCellValue(task.getAiEstimate()); // Custom field (Ai Estimate)
-	                    row.createCell(18).setCellValue(task.getEstimates().getLow()); // Optimistic Estimate
-	                    row.createCell(19).setCellValue(task.getEstimates().getHigh()); // Pessimistic Estimate
-	                    row.createCell(20).setCellValue(task.getEstimates().getRealistic()); // Realistic Estimate
+	                    row.createCell(8).setCellValue(formatDate(sprint.getStartDate()));//sprint created date
+	                    row.createCell(9).setCellValue(formatDate(sprint.getStartDate()));//sprint start date
+	                    row.createCell(10).setCellValue(formatDate(sprint.getEndDate()));//sprint completed date
+	                    row.createCell(11).setCellValue(formatDate(sprint.getEndDate()));//sprint end date
+	                    row.createCell(12).setCellValue(task.getSummary()); // Summary
+	                    
+	                    row.createCell(13).setCellValue(task.getTaskId()); // Issue key
+	                    row.createCell(14).setCellValue(task.getTaskType()); // Issue Type
+	                    row.createCell(15).setCellValue(task.getTaskStatus()); // Status
+	                    row.createCell(16).setCellValue(task.getTaskPriority()); // Priority
+	                    row.createCell(17).setCellValue(task.getStoryPoints()); // story points
+	                    row.createCell(18).setCellValue(task.getOriginalEstimate()); // Original estimate
+	                    row.createCell(19).setCellValue(task.getActual()); // actual estimate
+	                    row.createCell(20).setCellValue(formatDate(task.getActualTimeDate())); // actual time date
+	                    String labels = String.join(", ", task.getLabels());               
+	                    row.createCell(21).setCellValue(labels); // Labels
+	                    row.createCell(22).setCellValue(task.getTaskDescription()); // Description
+	                    row.createCell(23).setCellValue(formatDate(task.getCreationDate())); // creation date
+	                    row.createCell(24).setCellValue(formatDate(task.getSprintAssignDate())); // sprint assign date 
+	                    row.createCell(25).setCellValue(task.getEstimates().getLow()); // Optimistic Estimate
+	                    row.createCell(26).setCellValue(task.getEstimates().getHigh()); // Pessimistic Estimate
+	                    row.createCell(27).setCellValue(task.getEstimates().getRealistic()); // Realistic Estimate
 	                }
 	            }
 
@@ -142,19 +155,28 @@ public class DownloadExcelDataServiceImpl implements DownloadExcelData {
 	                row.createCell(5).setCellValue(downloadProject.getProjectName()); // ProjectName
 	                row.createCell(6).setCellValue(0); // Empty sprintId for backlog
 	                row.createCell(7).setCellValue(""); // Empty sprintName for backlog
-	                row.createCell(8).setCellValue(backlogTask.getSummary()); // Summary
-	                row.createCell(9).setCellValue(backlogTask.getTaskId()); // Issue key
-	                row.createCell(10).setCellValue(backlogTask.getTaskType()); // Issue Type
-	                row.createCell(11).setCellValue(backlogTask.getTaskStatus()); // Status
-	                row.createCell(12).setCellValue(backlogTask.getTaskPriority()); // Priority
-	                row.createCell(13).setCellValue(backlogTask.getOriginalEstimate()); // Original estimate
-	                row.createCell(14).setCellValue(backlogTask.getCreationDate()); // Updated
-	                row.createCell(15).setCellValue(backlogTask.getAssignee()); // Labels
-	                row.createCell(16).setCellValue(backlogTask.getTaskDescription()); // Description
-	                row.createCell(17).setCellValue(backlogTask.getAiEstimate()); // Custom field (Ai Estimate)
-	                row.createCell(18).setCellValue(backlogTask.getEstimates().getLow()); // Optimistic Estimate
-	                row.createCell(19).setCellValue(backlogTask.getEstimates().getHigh()); // Pessimistic Estimate
-	                row.createCell(20).setCellValue(backlogTask.getEstimates().getRealistic()); // Realistic Estimate
+	                row.createCell(8).setCellValue("");//sprint created date
+                    row.createCell(9).setCellValue("");//sprint start date
+                    row.createCell(10).setCellValue("");//sprint completed date
+                    row.createCell(11).setCellValue("");//sprint end date
+                    row.createCell(12).setCellValue(backlogTask.getSummary()); // Summary
+                    
+                    row.createCell(13).setCellValue(backlogTask.getTaskId()); // Issue key
+                    row.createCell(14).setCellValue(backlogTask.getTaskType()); // Issue Type
+                    row.createCell(15).setCellValue(backlogTask.getTaskStatus()); // Status
+                    row.createCell(16).setCellValue(backlogTask.getTaskPriority()); // Priority
+                    row.createCell(17).setCellValue(backlogTask.getStoryPoints()); // story points
+                    row.createCell(18).setCellValue(backlogTask.getOriginalEstimate()); // Original estimate
+                    row.createCell(19).setCellValue(backlogTask.getActual()); // actual estimate
+                    row.createCell(20).setCellValue(formatDate(backlogTask.getActualTimeDate())); // actual time date
+                    String labels = String.join(", ", backlogTask.getLabels());               
+                    row.createCell(21).setCellValue(labels); // Labels
+                    row.createCell(22).setCellValue(backlogTask.getTaskDescription()); // Description
+                    row.createCell(23).setCellValue(formatDate(backlogTask.getCreationDate())); // creation date
+                    row.createCell(24).setCellValue(formatDate(backlogTask.getSprintAssignDate())); // sprint assign date 
+                    row.createCell(25).setCellValue(backlogTask.getEstimates().getLow()); // Optimistic Estimate
+                    row.createCell(26).setCellValue(backlogTask.getEstimates().getHigh()); // Pessimistic Estimate
+                    row.createCell(27).setCellValue(backlogTask.getEstimates().getRealistic()); // Realistic Estimate
 	            }
 
 	            try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
@@ -185,7 +207,7 @@ public class DownloadExcelDataServiceImpl implements DownloadExcelData {
 	        Row infoRow = sheet.createRow(0);
 	        sheet.addMergedRegion(new CellRangeAddress(0, 1, 0, 20));
 	        Cell infoCell = infoRow.createCell(0);
-	        infoCell.setCellValue("Information about the Columns:\nIssue Type - e.g: \"Bug,\" \"Story,\" or \"Task,\". Status - e.g: \"To Do,\" \"In Progress,\" or \"Done,\". Priority - e.g: \"High,\" \"Medium,\" or \"Low,\".");
+	        infoCell.setCellValue("Information about the Columns:\nIssue Type - e.g: \"Bug,\" \"Story,\" or \"Task,\". Status - e.g: \"To Do,\" \"In Progress,\" or \"Done,\". Priority - e.g: \"High,\" \"Medium,\" or \"Low,\"Date format - \"M/D/YY\".");
 	        CellStyle wrapStyle = workbook.createCellStyle();
 	        wrapStyle.setWrapText(true);
 	        infoCell.setCellStyle(wrapStyle);
@@ -193,11 +215,12 @@ public class DownloadExcelDataServiceImpl implements DownloadExcelData {
 	        // Create header row
 	        Row headerRow = sheet.createRow(2);
 	        String[] headers = {
-	            "clientName", "clientUserName", "clientToken", "clientUserName For project",
-	            "projectId", "ProjectName", "sprintId", "sprintName", "Summary", "Issue key",
-	            "Issue Type", "Status", "Priority", "Original estimate", "Updated", "Labels",
-	            "Description", "Custom field (Ai Estimate)", "Optimistic Estimate",
-	            "Pessimistic Estimate", "Realistic Estimate"
+	        		"clientName", "clientUserName", "clientToken", "clientUserName For project",
+	                "projectId", "ProjectName", "sprintId", "sprintName","Sprint Created Date",
+	                "Sprint Start Date","Sprint Completed Date","Sprint End Date", "Summary", "Issue key",
+	                "Issue Type", "Status", "Priority","Story Points", "Original estimate(Hrs)","Actual Time(Hrs)",
+	                "Actual Time Date",  "Labels","Description","Creation Date","Sprint Assign Date", "Optimistic Estimate",
+	                "Pessimistic Estimate", "Realistic Estimate"
 	        };
 	        for (int i = 0; i < headers.length; i++) {
 	            Cell cell = headerRow.createCell(i);
@@ -230,19 +253,28 @@ public class DownloadExcelDataServiceImpl implements DownloadExcelData {
 	                    row.createCell(5).setCellValue(downloadProject.getProjectName()); // ProjectName
 	                    row.createCell(6).setCellValue(sprint.getSprintId()); // sprintId
 	                    row.createCell(7).setCellValue(sprint.getSprintName()); // sprintName
-	                    row.createCell(8).setCellValue(task.getSummary()); // Summary
-	                    row.createCell(9).setCellValue(task.getTaskId()); // Issue key
-	                    row.createCell(10).setCellValue(task.getTaskType()); // Issue Type
-	                    row.createCell(11).setCellValue(task.getTaskStatus()); // Status
-	                    row.createCell(12).setCellValue(task.getTaskPriority()); // Priority
-	                    row.createCell(13).setCellValue(task.getOriginalEstimate()); // Original estimate
-	                    row.createCell(14).setCellValue(task.getCreationDate()); // Updated
-	                    row.createCell(15).setCellValue(task.getAssignee()); // Labels
-	                    row.createCell(16).setCellValue(task.getTaskDescription()); // Description
-	                    row.createCell(17).setCellValue(task.getAiEstimate()); // Custom field (Ai Estimate)
-	                    row.createCell(18).setCellValue(task.getEstimates().getLow()); // Optimistic Estimate
-	                    row.createCell(19).setCellValue(task.getEstimates().getHigh()); // Pessimistic Estimate
-	                    row.createCell(20).setCellValue(task.getEstimates().getRealistic()); // Realistic Estimate
+	                    row.createCell(8).setCellValue(formatDate(sprint.getStartDate()));//sprint created date
+	                    row.createCell(9).setCellValue(formatDate(sprint.getStartDate()));//sprint start date
+	                    row.createCell(10).setCellValue(formatDate(sprint.getEndDate()));//sprint completed date
+	                    row.createCell(11).setCellValue(formatDate(sprint.getEndDate()));//sprint end date
+	                    row.createCell(12).setCellValue(task.getSummary()); // Summary
+	                    
+	                    row.createCell(13).setCellValue(task.getTaskId()); // Issue key
+	                    row.createCell(14).setCellValue(task.getTaskType()); // Issue Type
+	                    row.createCell(15).setCellValue(task.getTaskStatus()); // Status
+	                    row.createCell(16).setCellValue(task.getTaskPriority()); // Priority
+	                    row.createCell(17).setCellValue(task.getStoryPoints()); // story points
+	                    row.createCell(18).setCellValue(task.getOriginalEstimate()); // Original estimate
+	                    row.createCell(19).setCellValue(task.getActual()); // actual estimate
+	                    row.createCell(20).setCellValue(formatDate(task.getActualTimeDate())); // actual time date
+	                    String labels = String.join(", ", task.getLabels());               
+	                    row.createCell(21).setCellValue(labels); // Labels
+	                    row.createCell(22).setCellValue(task.getTaskDescription()); // Description
+	                    row.createCell(23).setCellValue(formatDate(task.getCreationDate())); // creation date
+	                    row.createCell(24).setCellValue(formatDate(task.getSprintAssignDate())); // sprint assign date 
+	                    row.createCell(25).setCellValue(task.getEstimates().getLow()); // Optimistic Estimate
+	                    row.createCell(26).setCellValue(task.getEstimates().getHigh()); // Pessimistic Estimate
+	                    row.createCell(27).setCellValue(task.getEstimates().getRealistic()); // Realistic Estimate
 	                }
 	               
 	            }
@@ -280,7 +312,7 @@ public class DownloadExcelDataServiceImpl implements DownloadExcelData {
 
 		        // Set the value for the merged cell
 		        Cell infoCell = infoRow.createCell(0);
-		        infoCell.setCellValue("Information about the Columns:\nIssue Type - e.g: \"Bug,\" \"Story,\" or \"Task,\". Status - e.g: \"To Do,\" \"In Progress,\" or \"Done,\". Priority - e.g: \"High,\" \"Medium,\" or \"Low,\".");
+		        infoCell.setCellValue("Information about the Columns:\nIssue Type - e.g: \"Bug,\" \"Story,\" or \"Task,\". Status - e.g: \"To Do,\" \"In Progress,\" or \"Done,\". Priority - e.g: \"High,\" \"Medium,\" or \"Low,\"Date format - \"M/D/YY\".");
 
 		        // Wrap text for the merged cells
 		        CellStyle wrapStyle = workbook.createCellStyle();
@@ -290,11 +322,12 @@ public class DownloadExcelDataServiceImpl implements DownloadExcelData {
 		        // Create header row
 		        Row headerRow = sheet.createRow(2);
 		        String[] headers = {
-		            "clientName", "clientUserName", "clientToken", "clientUserName For project",
-		            "projectId", "ProjectName", "sprintId", "sprintName", "Summary", "Issue key",
-		            "Issue Type", "Status", "Priority", "Original estimate", "Updated", "Labels",
-		            "Description", "Custom field (Ai Estimate)", "Optimistic Estimate",
-		            "Pessimistic Estimate", "Realistic Estimate"
+		        		"clientName", "clientUserName", "clientToken", "clientUserName For project",
+		                "projectId", "ProjectName", "sprintId", "sprintName","Sprint Created Date",
+		                "Sprint Start Date","Sprint Completed Date","Sprint End Date", "Summary", "Issue key",
+		                "Issue Type", "Status", "Priority","Story Points", "Original estimate(Hrs)","Actual Time(Hrs)",
+		                "Actual Time Date",  "Labels","Description","Creation Date","Sprint Assign Date", "Optimistic Estimate",
+		                "Pessimistic Estimate", "Realistic Estimate"
 		        };
 		        for (int i = 0; i < headers.length; i++) {
 		            Cell cell = headerRow.createCell(i);
@@ -326,19 +359,28 @@ public class DownloadExcelDataServiceImpl implements DownloadExcelData {
 		            row.createCell(5).setCellValue(downloadProject.getProjectName()); // ProjectName
 		            row.createCell(6).setCellValue(0); // Empty sprintId for backlog
 		            row.createCell(7).setCellValue(""); // Empty sprintName for backlog
-		            row.createCell(8).setCellValue(backlogTask.getSummary()); // Summary
-		            row.createCell(9).setCellValue(backlogTask.getTaskId()); // Issue key
-		            row.createCell(10).setCellValue(backlogTask.getTaskType()); // Issue Type
-		            row.createCell(11).setCellValue(backlogTask.getTaskStatus()); // Status
-		            row.createCell(12).setCellValue(backlogTask.getTaskPriority()); // Priority
-		            row.createCell(13).setCellValue(backlogTask.getOriginalEstimate()); // Original estimate
-		            row.createCell(14).setCellValue(backlogTask.getCreationDate()); // Updated
-		            row.createCell(15).setCellValue(backlogTask.getAssignee()); // Labels
-		            row.createCell(16).setCellValue(backlogTask.getTaskDescription()); // Description
-		            row.createCell(17).setCellValue(backlogTask.getAiEstimate()); // Custom field (Ai Estimate)
-		            row.createCell(18).setCellValue(backlogTask.getEstimates().getLow()); // Optimistic Estimate
-		            row.createCell(19).setCellValue(backlogTask.getEstimates().getHigh()); // Pessimistic Estimate
-		            row.createCell(20).setCellValue(backlogTask.getEstimates().getRealistic()); // Realistic Estimate
+		            row.createCell(8).setCellValue("");//sprint created date
+                    row.createCell(9).setCellValue("");//sprint start date
+                    row.createCell(10).setCellValue("");//sprint completed date
+                    row.createCell(11).setCellValue("");//sprint end date
+                    row.createCell(12).setCellValue(backlogTask.getSummary()); // Summary
+                    
+                    row.createCell(13).setCellValue(backlogTask.getTaskId()); // Issue key
+                    row.createCell(14).setCellValue(backlogTask.getTaskType()); // Issue Type
+                    row.createCell(15).setCellValue(backlogTask.getTaskStatus()); // Status
+                    row.createCell(16).setCellValue(backlogTask.getTaskPriority()); // Priority
+                    row.createCell(17).setCellValue(backlogTask.getStoryPoints()); // story points
+                    row.createCell(18).setCellValue(backlogTask.getOriginalEstimate()); // Original estimate
+                    row.createCell(19).setCellValue(backlogTask.getActual()); // actual estimate
+                    row.createCell(20).setCellValue(formatDate(backlogTask.getActualTimeDate())); // actual time date
+                    String labels = String.join(", ", backlogTask.getLabels());               
+                    row.createCell(21).setCellValue(labels); // Labels
+                    row.createCell(22).setCellValue(backlogTask.getTaskDescription()); // Description
+                    row.createCell(23).setCellValue(formatDate(backlogTask.getCreationDate())); // creation date
+                    row.createCell(24).setCellValue(formatDate(backlogTask.getSprintAssignDate())); // sprint assign date 
+                    row.createCell(25).setCellValue(backlogTask.getEstimates().getLow()); // Optimistic Estimate
+                    row.createCell(26).setCellValue(backlogTask.getEstimates().getHigh()); // Pessimistic Estimate
+                    row.createCell(27).setCellValue(backlogTask.getEstimates().getRealistic()); // Realistic Estimate
 		        }
 
 		        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
@@ -346,4 +388,23 @@ public class DownloadExcelDataServiceImpl implements DownloadExcelData {
 		            return outputStream.toByteArray();
 		        }
 		    }
-}}
+		    
+		    	    
+}
+	private String formatDate(String dateStr) {
+		
+		SimpleDateFormat inputDateFormat = new SimpleDateFormat("MM/dd/yyyy"); // Replace with your actual input date format
+	    SimpleDateFormat outputDateFormat = new SimpleDateFormat("M/d/yy");
+
+        if (dateStr == null || dateStr.isEmpty()) {
+            return "";
+        }
+        try {
+            Date date = inputDateFormat.parse(dateStr);
+            return outputDateFormat.format(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return dateStr; // return original string if parsing fails
+        }
+    }
+}
